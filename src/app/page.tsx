@@ -2,10 +2,13 @@
 
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
+import { useSounds } from "@/hooks/useSounds";
+import { Smartphone, Shield, Zap, Target } from "lucide-react";
 
 export default function Home() {
   const [sessionId, setSessionId] = useState<string>("");
   const [qrValue, setQrValue] = useState<string>("");
+  const { playNotification } = useSounds();
 
   useEffect(() => {
     // Generate a unique session ID when the component mounts
@@ -18,7 +21,14 @@ export default function Home() {
     const baseUrl = "http://10.0.1.94:3000";
     const qrUrl = `${baseUrl}/session/${newSessionId}`;
     setQrValue(qrUrl);
-  }, []);
+
+    // Play a gentle notification when QR code is ready
+    const timer = setTimeout(() => {
+      playNotification();
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [playNotification]);
 
   return (
     <div className="min-h-screen bg-bee-gradient relative overflow-hidden">

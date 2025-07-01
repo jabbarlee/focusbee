@@ -2,20 +2,39 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useSounds } from "@/hooks/useSounds";
+import {
+  User,
+  ArrowRight,
+  Smartphone,
+  Target,
+  CheckCircle,
+  Zap,
+} from "lucide-react";
 
 export default function SessionPage() {
   const params = useParams();
   const sessionId = params.sessionId as string;
   const [currentStep, setCurrentStep] = useState(0);
   const [isStarted, setIsStarted] = useState(false);
+  const { playBuzz, playSuccess, playStepComplete, playQRScan } = useSounds();
+
+  // Play welcome sound when session page loads (QR scanned)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      playQRScan();
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [playQRScan]);
 
   const steps = [
     {
-      title: "Welcome to FocusBee! 🐝",
+      title: "Welcome to FocusBee!",
       subtitle: "Ready to create your focus ritual?",
       instruction: "Stand up and pick up your phone",
       action: "I'm standing",
-      icon: "🚶‍♂️",
+      icon: User,
+      color: "text-blue-500",
     },
     {
       title: "Great! Now walk away",
@@ -23,7 +42,8 @@ export default function SessionPage() {
       instruction:
         "Walk to another room or at least 10 steps away from your workspace",
       action: "I've walked away",
-      icon: "🚶‍♂️➡️",
+      icon: ArrowRight,
+      color: "text-green-500",
     },
     {
       title: "Perfect positioning!",
@@ -31,28 +51,33 @@ export default function SessionPage() {
       instruction:
         "Place your phone face down in this location and leave it here",
       action: "Phone is placed",
-      icon: "📱⬇️",
+      icon: Smartphone,
+      color: "text-orange-500",
     },
     {
-      title: "Ritual complete! ✨",
+      title: "Ritual complete!",
       subtitle: "Your focus zone is activated",
       instruction:
         "Return to your workspace. Your phone will stay here as a gentle reminder of your commitment to focus.",
       action: "Start focusing",
-      icon: "🎯",
+      icon: Target,
+      color: "text-purple-500",
     },
   ];
 
   const handleStepComplete = () => {
     if (currentStep < steps.length - 1) {
+      playStepComplete();
       setCurrentStep((prev) => prev + 1);
     } else {
-      // Final step - could redirect or show completion
+      // Final step - play success sound
+      playSuccess();
       setCurrentStep((prev) => prev + 1);
     }
   };
 
   const handleStart = () => {
+    playBuzz();
     setIsStarted(true);
   };
 
@@ -75,7 +100,7 @@ export default function SessionPage() {
           <div className="text-center max-w-md">
             {/* Bee icon */}
             <div className="w-20 h-20 bg-honey-gradient rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-              <span className="text-3xl">🐝</span>
+              <Zap size={36} className="text-white" />
             </div>
 
             <h1 className="text-4xl font-bold text-amber-900 mb-4">
@@ -129,7 +154,7 @@ export default function SessionPage() {
         <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 py-8">
           <div className="text-center max-w-md">
             <div className="w-24 h-24 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-              <span className="text-4xl">✅</span>
+              <CheckCircle size={48} className="text-white" />
             </div>
 
             <h1 className="text-4xl font-bold text-amber-900 mb-4">
@@ -143,7 +168,8 @@ export default function SessionPage() {
 
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-amber-200">
               <p className="text-amber-700 font-medium mb-2">
-                🎯 Your focus session is now active
+                <Target size={20} className="inline mr-2" />
+                Your focus session is now active
               </p>
               <p className="text-sm text-amber-600">
                 Your phone will stay where you left it as a gentle reminder of
@@ -185,8 +211,10 @@ export default function SessionPage() {
         <div className="flex-1 flex flex-col items-center justify-center px-6 py-8">
           <div className="text-center max-w-md">
             {/* Step icon */}
-            <div className="w-24 h-24 bg-honey-gradient rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
-              <span className="text-4xl">{step.icon}</span>
+            <div
+              className={`w-24 h-24 bg-honey-gradient rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg ${step.color}`}
+            >
+              <step.icon size={48} className="text-white" />
             </div>
 
             {/* Step counter */}
