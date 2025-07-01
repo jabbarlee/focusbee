@@ -1,4 +1,25 @@
+"use client";
+
+import { QRCodeSVG } from "qrcode.react";
+import { useEffect, useState } from "react";
+
 export default function Home() {
+  const [sessionId, setSessionId] = useState<string>("");
+  const [qrValue, setQrValue] = useState<string>("");
+
+  useEffect(() => {
+    // Generate a unique session ID when the component mounts
+    const newSessionId = `focusbee-${Date.now()}-${Math.random()
+      .toString(36)
+      .substring(2, 15)}`;
+    setSessionId(newSessionId);
+
+    // Create the QR code value (could be a URL or just the session ID)
+    const baseUrl = "http://10.0.1.94:3000";
+    const qrUrl = `${baseUrl}/session/${newSessionId}`;
+    setQrValue(qrUrl);
+  }, []);
+
   return (
     <div className="min-h-screen bg-bee-gradient relative overflow-hidden">
       {/* Background honeycomb pattern */}
@@ -32,22 +53,33 @@ export default function Home() {
           {/* QR Code Section */}
           <div className="flex flex-col items-center">
             <div className="bg-white p-8 rounded-3xl shadow-2xl animate-pulse-glow mb-8">
-              {/* QR Code placeholder */}
-              <div className="w-64 h-64 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center border-4 border-amber-200">
-                <div className="text-center">
-                  <div className="w-32 h-32 mx-auto mb-4 bg-gray-300 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="w-16 h-16 text-gray-500"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path d="M3 3h6v6H3V3zm2 2v2h2V5H5zM3 15h6v6H3v-6zm2 2v2h2v-2H5zM15 3h6v6h-6V3zm2 2v2h2V5h-2zM11 5h2v2h-2V5zM5 11h2v2H5v-2zM11 11h2v2h-2v-2zM17 11h2v2h-2v-2zM11 17h2v2h-2v-2zM17 17h2v2h-2v-2zM15 15h2v2h-2v-2z" />
-                    </svg>
+              {/* QR Code */}
+              <div className="w-64 h-64 flex items-center justify-center">
+                {qrValue ? (
+                  <QRCodeSVG
+                    value={qrValue}
+                    size={240}
+                    level="M"
+                    includeMargin={true}
+                    fgColor="#92400e"
+                    bgColor="#fffbeb"
+                    imageSettings={{
+                      src: "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgdmlld0JveD0iMCAwIDEwMCAxMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiByeD0iMjAiIGZpbGw9IiNmNmFkNTUiLz4KPGV5bGlwc2UgY3g9IjUwIiBjeT0iNTAiIHJ4PSI4IiByeT0iMTYiIGZpbGw9IiMyZDM3NDgiLz4KPGV5bGlwc2UgY3g9IjUwIiBjeT0iNDQiIHJ4PSI3IiByeT0iMyIgZmlsbD0iI2Y2YWQ1NSIvPgo8ZWxsaXBzZSBjeD0iNTAiIGN5PSI1NiIgcng9IjciIHJ5PSIzIiBmaWxsPSIjZjZhZDU1Ii8+CjxjaXJjbGUgY3g9IjUwIiBjeT0iMzAiIHI9IjYiIGZpbGw9IiMyZDM3NDgiLz4KPGV5bGlwc2UgY3g9IjQyIiBjeT0iNDIiIHJ4PSI0IiByeT0iOCIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjgpIi8+CjxlbGxpcHNlIGN4PSI1OCIgY3k9IjQyIiByeD0iNCIgcnk9IjgiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC44KSIvPgo8L3N2Zz4K",
+                      height: 32,
+                      width: 32,
+                      excavate: true,
+                    }}
+                  />
+                ) : (
+                  <div className="w-60 h-60 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center border-4 border-amber-200">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto"></div>
+                      <p className="text-sm text-gray-600 font-mono mt-4">
+                        Generating QR Code...
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-600 font-mono">
-                    QR Code Placeholder
-                  </p>
-                </div>
+                )}
               </div>
             </div>
 
