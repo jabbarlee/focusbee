@@ -3,7 +3,7 @@
 import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 import { useSounds } from "@/hooks/useSounds";
-import { Smartphone, Shield, Zap, Target } from "lucide-react";
+import { Smartphone, Shield, Zap, Target, Clock } from "lucide-react";
 
 export default function Home() {
   const [sessionId, setSessionId] = useState<string>("");
@@ -108,29 +108,36 @@ export default function Home() {
 
               <div className="space-y-6 text-lg text-amber-800">
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-amber-400 rounded-full flex items-center justify-center flex-shrink-0 text-amber-900 font-bold">
-                    1
+                  <div className="w-10 h-10 bg-amber-400 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Smartphone size={20} className="text-amber-900" />
                   </div>
                   <p>Scan the QR code with your phone</p>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-amber-400 rounded-full flex items-center justify-center flex-shrink-0 text-amber-900 font-bold">
-                    2
+                  <div className="w-10 h-10 bg-amber-400 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Clock size={20} className="text-amber-900" />
+                  </div>
+                  <p>Choose your focus duration</p>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-amber-400 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Zap size={20} className="text-amber-900" />
                   </div>
                   <p>Follow the guided ritual</p>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-amber-400 rounded-full flex items-center justify-center flex-shrink-0 text-amber-900 font-bold">
-                    3
+                  <div className="w-10 h-10 bg-amber-400 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Target size={20} className="text-amber-900" />
                   </div>
                   <p>Create distance from your phone</p>
                 </div>
 
                 <div className="flex items-start gap-4">
-                  <div className="w-8 h-8 bg-amber-400 rounded-full flex items-center justify-center flex-shrink-0 text-amber-900 font-bold">
-                    4
+                  <div className="w-10 h-10 bg-amber-400 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Shield size={20} className="text-amber-900" />
                   </div>
                   <p>Enter your focused work zone</p>
                 </div>
