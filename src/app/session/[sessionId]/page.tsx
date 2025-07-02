@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
 import {
   User,
@@ -18,6 +18,7 @@ import {
 
 export default function SessionPage() {
   const params = useParams();
+  const router = useRouter();
   const sessionId = params.sessionId as string;
   const [currentStep, setCurrentStep] = useState(0);
   const [isStarted, setIsStarted] = useState(false);
@@ -32,9 +33,19 @@ export default function SessionPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       playQRScan();
+
+      // Mark phone as connected
+      localStorage.setItem(
+        `session-${sessionId}`,
+        JSON.stringify({
+          phoneConnected: true,
+          currentStep: "Phone connected - selecting timer",
+          connectedAt: new Date().toISOString(),
+        })
+      );
     }, 300);
     return () => clearTimeout(timer);
-  }, [playQRScan]);
+  }, [playQRScan, sessionId]);
 
   const timerOptions = [
     {
@@ -128,13 +139,65 @@ export default function SessionPage() {
       setCountdown(10);
       setIsCountdownActive(true);
       playStepComplete();
+
+      // Update laptop with step 1 progress
+      localStorage.setItem(
+        `session-${sessionId}`,
+        JSON.stringify({
+          phoneConnected: true,
+          currentStep: "Step 1: Standing up",
+          stepNumber: 1,
+          totalSteps: steps.length,
+          ritualInProgress: true,
+          updatedAt: new Date().toISOString(),
+        })
+      );
+
       setCurrentStep((prev) => prev + 1);
     } else if (currentStep < steps.length - 1) {
       playStepComplete();
+
+      // Update laptop with current step progress
+      const nextStep = currentStep + 1;
+      const stepDescriptions = [
+        "Step 1: Standing up",
+        "Step 2: Walking away",
+        "Step 3: Placing phone",
+        "Step 4: Returning to workspace",
+      ];
+
+      localStorage.setItem(
+        `session-${sessionId}`,
+        JSON.stringify({
+          phoneConnected: true,
+          currentStep: stepDescriptions[nextStep] || `Step ${nextStep + 1}`,
+          stepNumber: nextStep + 1,
+          totalSteps: steps.length,
+          ritualInProgress: true,
+          updatedAt: new Date().toISOString(),
+        })
+      );
+
       setCurrentStep((prev) => prev + 1);
     } else {
-      // Final step - play success sound
+      // Final step - play success sound and store completion data
       playSuccess();
+
+      // Store session completion data for laptop to pick up
+      localStorage.setItem(
+        `session-${sessionId}`,
+        JSON.stringify({
+          phoneConnected: true,
+          completed: true,
+          currentStep: "Ritual complete - launching focus zone",
+          timer: selectedTimer,
+          stepNumber: steps.length,
+          totalSteps: steps.length,
+          ritualInProgress: false,
+          completedAt: new Date().toISOString(),
+        })
+      );
+
       setCurrentStep((prev) => prev + 1);
     }
   };
@@ -142,6 +205,17 @@ export default function SessionPage() {
   const handleStart = () => {
     setTimerStartTime(new Date());
     setIsStarted(true);
+
+    // Update laptop with ritual start
+    localStorage.setItem(
+      `session-${sessionId}`,
+      JSON.stringify({
+        phoneConnected: true,
+        currentStep: "Focus ritual started",
+        ritualStarted: true,
+        updatedAt: new Date().toISOString(),
+      })
+    );
   };
 
   const handleTimerSelect = (timerId: string) => {
@@ -151,6 +225,18 @@ export default function SessionPage() {
   const handleConfirmTimer = () => {
     setTimerConfirmed(true);
     playBuzz();
+
+    // Update laptop with timer selection
+    const selectedTimerData = timerOptions.find((t) => t.id === selectedTimer);
+    localStorage.setItem(
+      `session-${sessionId}`,
+      JSON.stringify({
+        phoneConnected: true,
+        currentStep: `Timer selected: ${selectedTimerData?.name}`,
+        timerSelected: selectedTimer,
+        updatedAt: new Date().toISOString(),
+      })
+    );
   };
 
   // Timer selection screen
@@ -414,6 +500,31 @@ export default function SessionPage() {
                 your commitment to focus.
               </p>
             </div>
+
+            <button
+              onClick={() => {
+                // Store final session data and trigger laptop redirect
+                localStorage.setItem(
+                  `session-${sessionId}`,
+                  JSON.stringify({
+                    phoneConnected: true,
+                    completed: true,
+                    currentStep: "Focus zone launched",
+                    timer: selectedTimer,
+                    stepNumber: steps.length,
+                    totalSteps: steps.length,
+                    ritualInProgress: false,
+                    focusZoneLaunched: true,
+                    completedAt: new Date().toISOString(),
+                  })
+                );
+                // Also redirect phone user for immediate feedback
+                router.push(`/focus/${sessionId}?timer=${selectedTimer}`);
+              }}
+              className="w-full mt-6 bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-2xl text-lg transition-all duration-200 shadow-lg hover:scale-105"
+            >
+              Launch Focus Zone →
+            </button>
           </div>
         </div>
       </div>
