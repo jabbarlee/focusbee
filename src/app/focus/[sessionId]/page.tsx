@@ -244,10 +244,10 @@ export default function FocusZonePage() {
 
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
-        <header className="flex items-center justify-between p-6">
+        <header className="flex items-center justify-center p-6 relative">
           <button
             onClick={handleBackToSession}
-            className="flex items-center gap-2 px-4 py-2 bg-white/80 hover:bg-white text-amber-800 font-medium rounded-xl transition-colors duration-200"
+            className="absolute left-6 flex items-center gap-2 px-4 py-2 bg-white/80 hover:bg-white text-amber-800 font-medium rounded-xl transition-colors duration-200"
           >
             <ArrowLeft size={20} />
             Back to Session
@@ -260,7 +260,6 @@ export default function FocusZonePage() {
               Session: {sessionId?.slice(-8)}
             </p>
           </div>
-          <div className="w-24"></div> {/* Spacer for centering */}
         </header>
 
         {/* Main timer area */}

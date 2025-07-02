@@ -342,9 +342,14 @@ export default function SessionPage() {
               <Zap size={36} className="text-white" />
             </div>
 
-            <h1 className="text-4xl font-bold text-amber-900 mb-4">
-              Focus<span className="text-amber-600">Bee</span>
-            </h1>
+            <div className="text-center mb-6">
+              <h1 className="text-4xl font-bold text-amber-900 mb-4">
+                Focus<span className="text-amber-600">Bee</span>
+              </h1>
+              <p className="text-sm text-amber-600">
+                Session: {sessionId?.slice(-8)}
+              </p>
+            </div>
 
             <p className="text-lg text-amber-800 mb-8 leading-relaxed">
               Ready to create some distance from your phone and enter your focus
@@ -472,23 +477,23 @@ export default function SessionPage() {
 
               <p className="text-sm text-amber-600">
                 Your phone will stay where you left it as a gentle reminder of
-                your commitment to focus.
+                your commitment to focus. The timer is now running on your
+                laptop!
               </p>
             </div>
 
-            <button
-              onClick={() => {
-                // Emit final completion and redirect phone user
-                if (selectedTimer) {
-                  emitRitualComplete(selectedTimer);
-                }
-                // Redirect phone user for immediate feedback
-                router.push(`/focus/${sessionId}?timer=${selectedTimer}`);
-              }}
-              className="w-full mt-6 bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-2xl text-lg transition-all duration-200 shadow-lg hover:scale-105"
-            >
-              Launch Focus Zone →
-            </button>
+            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle size={16} className="text-green-600" />
+                <p className="text-green-800 font-semibold text-sm">
+                  Ritual Complete!
+                </p>
+              </div>
+              <p className="text-green-700 text-sm">
+                🎯 Return to your laptop to see your focus timer in action. Your
+                phone can stay here until the session ends.
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -594,9 +599,8 @@ export default function SessionPage() {
 
             {/* Session info */}
             <div className="mt-6 pt-6 border-t border-amber-300/30">
-              <p className="text-sm text-amber-600">
-                Step {currentStep + 1} of {steps.length} • Session:{" "}
-                {sessionId?.slice(-8)}
+              <p className="text-sm text-amber-600 text-center">
+                Step {currentStep + 1} of {steps.length}
               </p>
             </div>
           </div>

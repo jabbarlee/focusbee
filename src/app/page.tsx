@@ -22,10 +22,18 @@ export default function Home() {
   const { playNotification, playBuzz } = useSounds();
 
   useEffect(() => {
-    // Generate a unique session ID when the component mounts
-    const newSessionId = `focusbee-${Date.now()}-${Math.random()
-      .toString(36)
-      .substring(2, 15)}`;
+    // Generate a unique session ID in UUID format when the component mounts
+    const generateUUID = () => {
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+        /[xy]/g,
+        function (c) {
+          const r = (Math.random() * 16) | 0;
+          const v = c == "x" ? r : (r & 0x3) | 0x8;
+          return v.toString(16);
+        }
+      );
+    };
+    const newSessionId = generateUUID();
     setSessionId(newSessionId);
 
     // Create the QR code value (could be a URL or just the session ID)
