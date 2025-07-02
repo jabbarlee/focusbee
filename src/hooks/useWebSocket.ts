@@ -27,38 +27,47 @@ export function useWebSocket({
 
   // Memoize event handlers to prevent unnecessary reconnections
   const handlePhoneConnected = useCallback(() => {
-    console.log('Phone connected event received');
+    console.log("Phone connected event received");
     onPhoneConnected?.();
   }, [onPhoneConnected]);
 
-  const handleRitualStep = useCallback((data: any) => {
-    console.log('Ritual step event received:', data);
-    onRitualStep?.(data);
-  }, [onRitualStep]);
+  const handleRitualStep = useCallback(
+    (data: any) => {
+      console.log("Ritual step event received:", data);
+      onRitualStep?.(data);
+    },
+    [onRitualStep]
+  );
 
-  const handleTimerSelected = useCallback((data: any) => {
-    console.log('Timer selected event received:', data);
-    onTimerSelected?.(data);
-  }, [onTimerSelected]);
+  const handleTimerSelected = useCallback(
+    (data: any) => {
+      console.log("Timer selected event received:", data);
+      onTimerSelected?.(data);
+    },
+    [onTimerSelected]
+  );
 
-  const handleRitualComplete = useCallback((data: any) => {
-    console.log('Ritual complete event received:', data);
-    onRitualComplete?.(data);
-  }, [onRitualComplete]);
+  const handleRitualComplete = useCallback(
+    (data: any) => {
+      console.log("Ritual complete event received:", data);
+      onRitualComplete?.(data);
+    },
+    [onRitualComplete]
+  );
 
   useEffect(() => {
-    if (!sessionId || sessionId.trim() === '') {
-      console.log('No sessionId provided, skipping WebSocket connection');
+    if (!sessionId || sessionId.trim() === "") {
+      console.log("No sessionId provided, skipping WebSocket connection");
       return;
     }
 
     // Prevent multiple connections
     if (socketRef.current?.connected) {
-      console.log('Socket already connected, skipping...');
+      console.log("Socket already connected, skipping...");
       return;
     }
 
-    console.log('Initializing WebSocket connection for session:', sessionId);
+    console.log("Initializing WebSocket connection for session:", sessionId);
 
     // Clear any existing timeout
     if (reconnectTimeoutRef.current) {
@@ -66,10 +75,14 @@ export function useWebSocket({
     }
 
     // Get the current hostname to determine if we're on localhost or network
-    const hostname = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    const wsUrl = hostname === 'localhost' ? 'http://localhost:3001' : `http://${hostname}:3001`;
-    
-    console.log('Connecting to WebSocket at:', wsUrl);
+    const hostname =
+      typeof window !== "undefined" ? window.location.hostname : "localhost";
+    const wsUrl =
+      hostname === "localhost"
+        ? "http://localhost:3001"
+        : `http://${hostname}:3001`;
+
+    console.log("Connecting to WebSocket at:", wsUrl);
 
     // Initialize socket connection
     socketRef.current = io(wsUrl, {
@@ -78,7 +91,7 @@ export function useWebSocket({
       reconnectionAttempts: 3,
       reconnectionDelay: 2000,
       timeout: 5000,
-      forceNew: false,
+      forceNew: false, // Reuse existing connection if possible
     });
 
     const socket = socketRef.current;
@@ -93,10 +106,13 @@ export function useWebSocket({
     socket.on("disconnect", (reason: string) => {
       console.log("WebSocket disconnected:", reason);
       setIsConnected(false);
-      
+
       // Only attempt reconnection for certain reasons
-      if (reason === 'io server disconnect' || reason === 'io client disconnect') {
-        console.log('Manual disconnect, not reconnecting');
+      if (
+        reason === "io server disconnect" ||
+        reason === "io client disconnect"
+      ) {
+        console.log("Manual disconnect, not reconnecting");
         return;
       }
     });
@@ -113,7 +129,7 @@ export function useWebSocket({
     socket.on("ritual-complete", handleRitualComplete);
 
     return () => {
-      console.log('Cleaning up WebSocket connection');
+      console.log("Cleaning up WebSocket connection");
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
@@ -121,52 +137,61 @@ export function useWebSocket({
         socket.disconnect();
       }
     };
-  }, [sessionId]);
+  }, [sessionId]); // Only depend on sessionId
 
   const emitPhoneConnected = useCallback(() => {
     if (socketRef.current && isConnected) {
-      console.log('Emitting phone connected for session:', sessionId);
+      console.log("Emitting phone connected for session:", sessionId);
       socketRef.current.emit("phone-connected", { sessionId });
     } else {
-      console.warn('Cannot emit phone connected - socket not ready');
+      console.warn("Cannot emit phone connected - socket not ready");
     }
   }, [sessionId, isConnected]);
 
-  const emitRitualStep = useCallback((
-    step: string,
-    stepNumber: number,
-    totalSteps: number
-  ) => {
-    if (socketRef.current && isConnected) {
-      console.log('Emitting ritual step:', step);
-      socketRef.current.emit("ritual-step", {
-        sessionId,
-        step,
-        stepNumber,
-        totalSteps,
-      });
-    } else {
-      console.warn('Cannot emit ritual step - socket not ready');
-    }
-  }, [sessionId, isConnected]);
+  const emitRitualStep = useCallback(
+    (step: string, stepNumber: number, totalSteps: number) => {
+      if (socketRef.current && isConnected) {
+        console.log("Emitting ritual step:", step);
+        socketRef.current.emit("ritual-step", {
+          sessionId,
+          step,
+          stepNumber,
+          totalSteps,
+        });
+      } else {
+        console.warn("Cannot emit ritual step - socket not ready");
+      }
+    },
+    [sessionId, isConnected]
+  );
 
-  const emitTimerSelected = useCallback((timer: string, timerName: string) => {
-    if (socketRef.current && isConnected) {
-      console.log('Emitting timer selected:', timerName);
-      socketRef.current.emit("timer-selected", { sessionId, timer, timerName });
-    } else {
-      console.warn('Cannot emit timer selected - socket not ready');
-    }
-  }, [sessionId, isConnected]);
+  const emitTimerSelected = useCallback(
+    (timer: string, timerName: string) => {
+      if (socketRef.current && isConnected) {
+        console.log("Emitting timer selected:", timerName);
+        socketRef.current.emit("timer-selected", {
+          sessionId,
+          timer,
+          timerName,
+        });
+      } else {
+        console.warn("Cannot emit timer selected - socket not ready");
+      }
+    },
+    [sessionId, isConnected]
+  );
 
-  const emitRitualComplete = useCallback((timer: string) => {
-    if (socketRef.current && isConnected) {
-      console.log('Emitting ritual complete for timer:', timer);
-      socketRef.current.emit("ritual-complete", { sessionId, timer });
-    } else {
-      console.warn('Cannot emit ritual complete - socket not ready');
-    }
-  }, [sessionId, isConnected]);
+  const emitRitualComplete = useCallback(
+    (timer: string) => {
+      if (socketRef.current && isConnected) {
+        console.log("Emitting ritual complete for timer:", timer);
+        socketRef.current.emit("ritual-complete", { sessionId, timer });
+      } else {
+        console.warn("Cannot emit ritual complete - socket not ready");
+      }
+    },
+    [sessionId, isConnected]
+  );
 
   return {
     isConnected,
