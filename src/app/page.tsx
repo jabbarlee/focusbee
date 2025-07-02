@@ -4,6 +4,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import { Smartphone, Shield, Zap, Target, Clock } from "lucide-react";
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
   const [isWaitingForSession, setIsWaitingForSession] = useState(false);
   const [isPhoneConnected, setIsPhoneConnected] = useState(false);
   const [ritualStep, setRitualStep] = useState<string>("");
+  const [selectedTimer, setSelectedTimer] = useState<string>("");
   const [stepProgress, setStepProgress] = useState<{
     stepNumber: number;
     totalSteps: number;
@@ -36,54 +38,36 @@ export default function Home() {
       playNotification();
     }, 500);
 
-    // Poll for session completion and status
-    const pollInterval = setInterval(() => {
-      const sessionData = localStorage.getItem(`session-${newSessionId}`);
-      if (sessionData) {
-        const data = JSON.parse(sessionData);
-
-        // Check if phone is connected (QR was scanned)
-        if (data.phoneConnected && !isPhoneConnected) {
-          setIsPhoneConnected(true);
-          playBuzz();
-        }
-
-        // Update ritual step
-        if (data.currentStep !== ritualStep) {
-          setRitualStep(data.currentStep || "");
-        }
-
-        // Update step progress
-        if (data.stepNumber && data.totalSteps) {
-          setStepProgress({
-            stepNumber: data.stepNumber,
-            totalSteps: data.totalSteps,
-          });
-        }
-
-        // Check if ritual is completed
-        if (data.completed && data.timer) {
-          setIsWaitingForSession(true);
-          setTimeout(() => {
-            router.push(`/focus/${newSessionId}?timer=${data.timer}`);
-          }, 2000);
-          clearInterval(pollInterval);
-        }
-      }
-    }, 1000);
-
     return () => {
       clearTimeout(timer);
-      clearInterval(pollInterval);
     };
-  }, [
-    playNotification,
-    playBuzz,
-    router,
-    isPhoneConnected,
-    ritualStep,
-    stepProgress,
-  ]);
+  }, [playNotification]);
+
+  // WebSocket connection - only initialize after sessionId is set
+  const { isConnected } = useWebSocket({
+    sessionId: sessionId || "", // Provide fallback but the hook will check for empty sessionId
+    onPhoneConnected: () => {
+      setIsPhoneConnected(true);
+      playBuzz();
+    },
+    onRitualStep: (data) => {
+      setRitualStep(data.step);
+      setStepProgress({
+        stepNumber: data.stepNumber,
+        totalSteps: data.totalSteps,
+      });
+    },
+    onTimerSelected: (data) => {
+      setSelectedTimer(data.timerName);
+      setRitualStep(`Timer selected: ${data.timerName}`);
+    },
+    onRitualComplete: (data) => {
+      setIsWaitingForSession(true);
+      setTimeout(() => {
+        router.push(`/focus/${sessionId}?timer=${data.timer}`);
+      }, 2000);
+    },
+  });
 
   return (
     <div className="min-h-screen bg-bee-gradient relative overflow-hidden">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
+import { useWebSocket } from "@/hooks/useWebSocket";
 import {
   User,
   ArrowRight,
@@ -29,23 +30,37 @@ export default function SessionPage() {
   const [isCountdownActive, setIsCountdownActive] = useState(false);
   const { playBuzz, playSuccess, playStepComplete, playQRScan } = useSounds();
 
+  // WebSocket connection for real-time communication with laptop
+  const {
+    isConnected,
+    emitPhoneConnected,
+    emitRitualStep,
+    emitTimerSelected,
+    emitRitualComplete,
+  } = useWebSocket({
+    sessionId,
+  });
+
   // Play welcome sound when session page loads (QR scanned)
   useEffect(() => {
     const timer = setTimeout(() => {
       playQRScan();
 
-      // Mark phone as connected
-      localStorage.setItem(
-        `session-${sessionId}`,
-        JSON.stringify({
-          phoneConnected: true,
-          currentStep: "Phone connected - selecting timer",
-          connectedAt: new Date().toISOString(),
-        })
-      );
-    }, 300);
+      // Wait for WebSocket connection before emitting
+      const checkConnectionAndEmit = () => {
+        if (isConnected) {
+          emitPhoneConnected();
+        } else {
+          // Retry after a short delay
+          setTimeout(checkConnectionAndEmit, 500);
+        }
+      };
+
+      checkConnectionAndEmit();
+    }, 1000); // Increased delay to allow connection to establish
+
     return () => clearTimeout(timer);
-  }, [playQRScan, sessionId]);
+  }, [playQRScan, emitPhoneConnected, isConnected]);
 
   const timerOptions = [
     {
@@ -140,24 +155,14 @@ export default function SessionPage() {
       setIsCountdownActive(true);
       playStepComplete();
 
-      // Update laptop with step 1 progress
-      localStorage.setItem(
-        `session-${sessionId}`,
-        JSON.stringify({
-          phoneConnected: true,
-          currentStep: "Step 1: Standing up",
-          stepNumber: 1,
-          totalSteps: steps.length,
-          ritualInProgress: true,
-          updatedAt: new Date().toISOString(),
-        })
-      );
+      // Emit step progress via WebSocket
+      emitRitualStep("Step 1: Standing up", 1, steps.length);
 
       setCurrentStep((prev) => prev + 1);
     } else if (currentStep < steps.length - 1) {
       playStepComplete();
 
-      // Update laptop with current step progress
+      // Emit current step progress via WebSocket
       const nextStep = currentStep + 1;
       const stepDescriptions = [
         "Step 1: Standing up",
@@ -166,37 +171,21 @@ export default function SessionPage() {
         "Step 4: Returning to workspace",
       ];
 
-      localStorage.setItem(
-        `session-${sessionId}`,
-        JSON.stringify({
-          phoneConnected: true,
-          currentStep: stepDescriptions[nextStep] || `Step ${nextStep + 1}`,
-          stepNumber: nextStep + 1,
-          totalSteps: steps.length,
-          ritualInProgress: true,
-          updatedAt: new Date().toISOString(),
-        })
+      emitRitualStep(
+        stepDescriptions[nextStep] || `Step ${nextStep + 1}`,
+        nextStep + 1,
+        steps.length
       );
 
       setCurrentStep((prev) => prev + 1);
     } else {
-      // Final step - play success sound and store completion data
+      // Final step - play success sound and emit completion
       playSuccess();
 
-      // Store session completion data for laptop to pick up
-      localStorage.setItem(
-        `session-${sessionId}`,
-        JSON.stringify({
-          phoneConnected: true,
-          completed: true,
-          currentStep: "Ritual complete - launching focus zone",
-          timer: selectedTimer,
-          stepNumber: steps.length,
-          totalSteps: steps.length,
-          ritualInProgress: false,
-          completedAt: new Date().toISOString(),
-        })
-      );
+      // Emit ritual completion via WebSocket
+      if (selectedTimer) {
+        emitRitualComplete(selectedTimer);
+      }
 
       setCurrentStep((prev) => prev + 1);
     }
@@ -206,16 +195,8 @@ export default function SessionPage() {
     setTimerStartTime(new Date());
     setIsStarted(true);
 
-    // Update laptop with ritual start
-    localStorage.setItem(
-      `session-${sessionId}`,
-      JSON.stringify({
-        phoneConnected: true,
-        currentStep: "Focus ritual started",
-        ritualStarted: true,
-        updatedAt: new Date().toISOString(),
-      })
-    );
+    // Emit ritual start via WebSocket
+    emitRitualStep("Focus ritual started", 0, steps.length);
   };
 
   const handleTimerSelect = (timerId: string) => {
@@ -226,17 +207,11 @@ export default function SessionPage() {
     setTimerConfirmed(true);
     playBuzz();
 
-    // Update laptop with timer selection
+    // Emit timer selection via WebSocket
     const selectedTimerData = timerOptions.find((t) => t.id === selectedTimer);
-    localStorage.setItem(
-      `session-${sessionId}`,
-      JSON.stringify({
-        phoneConnected: true,
-        currentStep: `Timer selected: ${selectedTimerData?.name}`,
-        timerSelected: selectedTimer,
-        updatedAt: new Date().toISOString(),
-      })
-    );
+    if (selectedTimerData) {
+      emitTimerSelected(selectedTimer!, selectedTimerData.name);
+    }
   };
 
   // Timer selection screen
@@ -503,22 +478,11 @@ export default function SessionPage() {
 
             <button
               onClick={() => {
-                // Store final session data and trigger laptop redirect
-                localStorage.setItem(
-                  `session-${sessionId}`,
-                  JSON.stringify({
-                    phoneConnected: true,
-                    completed: true,
-                    currentStep: "Focus zone launched",
-                    timer: selectedTimer,
-                    stepNumber: steps.length,
-                    totalSteps: steps.length,
-                    ritualInProgress: false,
-                    focusZoneLaunched: true,
-                    completedAt: new Date().toISOString(),
-                  })
-                );
-                // Also redirect phone user for immediate feedback
+                // Emit final completion and redirect phone user
+                if (selectedTimer) {
+                  emitRitualComplete(selectedTimer);
+                }
+                // Redirect phone user for immediate feedback
                 router.push(`/focus/${sessionId}?timer=${selectedTimer}`);
               }}
               className="w-full mt-6 bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-2xl text-lg transition-all duration-200 shadow-lg hover:scale-105"
