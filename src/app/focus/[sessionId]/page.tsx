@@ -203,14 +203,14 @@ export default function FocusZonePage() {
             <div className="flex gap-4">
               <button
                 onClick={handleReset}
-                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-6 rounded-2xl text-lg transition-all duration-200 shadow-lg hover:scale-105"
+                className="flex-1 bg-amber-500 hover:bg-amber-600 hover:shadow-xl text-white font-bold px-8 py-4 rounded-2xl text-lg transition-all duration-200 shadow-lg h-16 flex items-center justify-center"
               >
                 Start Another Session
               </button>
 
               <button
                 onClick={handleBackToSession}
-                className="flex items-center gap-2 px-6 py-4 bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium rounded-2xl transition-colors duration-200"
+                className="flex items-center justify-center gap-2 px-8 py-4 bg-amber-100 hover:bg-amber-200 hover:shadow-lg text-amber-800 font-bold rounded-2xl transition-all duration-200 h-16"
               >
                 <ArrowLeft size={20} />
                 Back to Session
@@ -247,7 +247,7 @@ export default function FocusZonePage() {
         <header className="flex items-center justify-center p-6 relative">
           <button
             onClick={handleBackToSession}
-            className="absolute left-6 flex items-center gap-2 px-4 py-2 bg-white/80 hover:bg-white text-amber-800 font-medium rounded-xl transition-colors duration-200"
+            className="absolute left-6 flex items-center justify-center gap-2 px-6 py-3 bg-white/80 hover:bg-white text-amber-800 font-bold rounded-xl transition-colors duration-200 h-12"
           >
             <ArrowLeft size={20} />
             Back to Session
@@ -340,11 +340,11 @@ export default function FocusZonePage() {
             <div className="flex items-center justify-center gap-6">
               <button
                 onClick={handlePause}
-                className={`flex items-center gap-2 px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 shadow-lg ${
+                className={`flex items-center justify-center gap-2 px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl h-16 ${
                   isPaused
                     ? "bg-green-500 hover:bg-green-600 text-white"
                     : "bg-amber-500 hover:bg-amber-600 text-white"
-                } hover:scale-105`}
+                }`}
               >
                 {isPaused ? <Play size={24} /> : <Pause size={24} />}
                 {isPaused ? "Resume" : "Pause"}
@@ -352,7 +352,7 @@ export default function FocusZonePage() {
 
               <button
                 onClick={handleReset}
-                className="flex items-center gap-2 px-6 py-4 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-2xl transition-all duration-200 shadow-lg hover:scale-105"
+                className="flex items-center justify-center gap-2 px-8 py-4 bg-gray-500 hover:bg-gray-600 hover:shadow-xl text-white font-bold rounded-2xl transition-all duration-200 shadow-lg h-16"
               >
                 <RotateCcw size={20} />
                 Reset
@@ -360,7 +360,7 @@ export default function FocusZonePage() {
 
               <button
                 onClick={handleBreak}
-                className="flex items-center gap-2 px-6 py-4 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-2xl transition-all duration-200 shadow-lg hover:scale-105"
+                className="flex items-center justify-center gap-2 px-8 py-4 bg-blue-500 hover:bg-blue-600 hover:shadow-xl text-white font-bold rounded-2xl transition-all duration-200 shadow-lg h-16"
               >
                 <Coffee size={20} />
                 Take a Break
