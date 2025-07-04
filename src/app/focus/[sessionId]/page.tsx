@@ -141,7 +141,13 @@ export default function FocusZonePage() {
 
   const handleBackToSession = () => {
     router.push(`/session/${sessionId}`);
-  }; // Friendly signup section component
+  };
+
+  const handleJoinHive = () => {
+    router.push("/signup");
+  };
+
+  // Friendly signup section component
   const SignupSection = () => (
     <div className="mt-8 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-3xl p-6 shadow-lg">
       <div className="text-center">
@@ -162,7 +168,7 @@ export default function FocusZonePage() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
-          <button className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:shadow-lg flex items-center gap-2 group">
+          <button className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:shadow-lg flex items-center gap-2 group" onClick={handleJoinHive}>
             <Star size={18} className="group-hover:animate-spin" />
             Join the Hive (Free!)
           </button>
