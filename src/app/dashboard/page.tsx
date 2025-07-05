@@ -60,7 +60,7 @@ export default function DashboardPage() {
 
     const newId = generateUUID();
     setSessionId(newId);
-    const baseUrl = window.location.origin;
+    const baseUrl = "http://10.0.1.24:3000";
     const qrUrl = `${baseUrl}/session/${newId}`;
     setQrValue(qrUrl);
 
@@ -233,99 +233,136 @@ export default function DashboardPage() {
           <div className="max-w-7xl mx-auto space-y-12">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* QR and status */}
-              <div className="lg:col-span-5 flex flex-col items-center space-y-6">
-                <div className="bg-white p-8 rounded-3xl shadow-xl animate-pulse-glow">
-                  <div className="w-56 h-56 flex items-center justify-center">
-                    {qrValue ? (
-                      <QRCodeSVG
-                        value={qrValue}
-                        size={220}
-                        level="M"
-                        includeMargin
-                        fgColor="#92400e"
-                        bgColor="#fffbeb"
-                      />
+              <div className="lg:col-span-5">
+                {/* Welcome Card - matches right side height exactly */}
+                <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-amber-200 h-full flex flex-col">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
+                      <Smartphone size={24} className="text-white" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-amber-900">
+                      Start Focus Session
+                    </h3>
+                  </div>
+                  <p className="text-amber-700 mb-6 leading-relaxed text-lg">
+                    Connect your phone to begin a focused work session. Place
+                    your device in the ritual zone and let FocusBee guide you to
+                    productivity.
+                  </p>
+
+                  {/* QR Code Section */}
+                  <div className="bg-gradient-to-br from-amber-50 to-yellow-50 rounded-3xl p-6 mb-4 flex-1 flex flex-col justify-center">
+                    <div className="flex justify-center mb-4">
+                      <div className="bg-white p-4 rounded-3xl shadow-xl">
+                        <div className="w-56 h-56 flex items-center justify-center">
+                          {qrValue ? (
+                            <QRCodeSVG
+                              value={qrValue}
+                              size={220}
+                              level="M"
+                              includeMargin
+                              fgColor="#92400e"
+                              bgColor="#ffffff"
+                            />
+                          ) : (
+                            <div className="w-52 h-52 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center border-2 border-amber-200">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <p className="text-center text-amber-800 font-semibold text-base">
+                      Scan with your phone camera
+                    </p>
+                    <p className="text-center text-amber-600 text-sm mt-1">
+                      Point your camera at the QR code to connect instantly
+                    </p>
+                  </div>
+
+                  {/* Status */}
+                  <div>
+                    {isPhoneConnected ? (
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-3">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                          <p className="text-green-800 font-bold text-sm">
+                            Phone Connected!
+                          </p>
+                        </div>
+                        {ritualStep && (
+                          <p className="text-green-700 text-center text-xs">
+                            {ritualStep}
+                          </p>
+                        )}
+                      </div>
                     ) : (
-                      <div className="w-52 h-52 bg-gradient-to-br from-gray-100 to-gray-200 rounded-2xl flex items-center justify-center border-4 border-amber-200">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600" />
+                      <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-2xl p-3">
+                        <div className="flex items-center justify-center gap-2 mb-1">
+                          <div className="w-3 h-3 bg-amber-500 rounded-full animate-ping"></div>
+                          <p className="text-amber-800 font-bold text-sm">
+                            Waiting for Connection
+                          </p>
+                        </div>
+                        <p className="text-amber-600 text-center text-xs">
+                          Open your camera app and scan the QR code above
+                        </p>
                       </div>
                     )}
                   </div>
                 </div>
-                <p className="text-lg text-amber-800 text-center max-w-sm leading-relaxed">
-                  <span className="font-semibold">Scan this code</span> with
-                  your phone to begin your focus ritual.
-                </p>
-                {/* Status */}
-                {isPhoneConnected ? (
-                  <div className="bg-green-50 border-2 border-green-200 rounded-2xl p-6 w-full text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Smartphone size={20} className="text-green-700" />
-                      <p className="text-green-800 font-semibold">
-                        Phone Connected!
-                      </p>
-                    </div>
-                    {ritualStep && (
-                      <p className="text-green-700">{ritualStep}</p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="bg-white/90 backdrop-blur-sm border-2 border-amber-200 rounded-2xl p-6 w-full text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Smartphone size={20} className="text-amber-600" />
-                      <p className="text-amber-800 font-semibold">
-                        Ready to Focus
-                      </p>
-                    </div>
-                    <p className="text-amber-600 text-sm">
-                      Scan the QR code to connect your phone
-                    </p>
-                  </div>
-                )}
               </div>
 
               {/* Stats and chart */}
               <div className="lg:col-span-7 space-y-8">
                 {/* Stats */}
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="bg-yellow-50 rounded-2xl p-6 border border-amber-200 text-center">
-                    <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <Trophy size={20} className="text-white" />
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 text-center hover:shadow-xl transition-shadow duration-300">
+                    <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Trophy size={24} className="text-white" />
                     </div>
-                    <div className="text-2xl font-bold text-amber-900">
+                    <div className="text-3xl font-bold text-amber-900 mb-1">
                       {stats.totalSessions}
                     </div>
-                    <p className="text-amber-700 text-sm">Total Sessions</p>
+                    <p className="text-amber-700 text-sm font-medium">
+                      Total Sessions
+                    </p>
                   </div>
 
-                  <div className="bg-green-50 rounded-2xl p-6 border border-green-200 text-center">
-                    <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <Clock size={20} className="text-white" />
+                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-green-200 text-center hover:shadow-xl transition-shadow duration-300">
+                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Clock size={24} className="text-white" />
                     </div>
-                    <div className="text-2xl font-bold text-green-800">
+                    <div className="text-3xl font-bold text-green-800 mb-1">
                       {formatTime(stats.totalFocusTime)}
                     </div>
-                    <p className="text-green-700 text-sm">Total Focus Time</p>
+                    <p className="text-green-700 text-sm font-medium">
+                      Total Focus Time
+                    </p>
                   </div>
 
-                  <div className="bg-orange-50 rounded-2xl p-6 border border-orange-200 text-center">
-                    <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <Flame size={20} className="text-white" />
+                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-orange-200 text-center hover:shadow-xl transition-shadow duration-300">
+                    <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Flame size={24} className="text-white" />
                     </div>
-                    <div className="text-2xl font-bold text-orange-800">
+                    <div className="text-3xl font-bold text-orange-800 mb-1">
                       {stats.streakDays}
                     </div>
-                    <p className="text-orange-700 text-sm">Day Streak</p>
+                    <p className="text-orange-700 text-sm font-medium">
+                      Day Streak
+                    </p>
                   </div>
 
-                  <div className="bg-purple-50 rounded-2xl p-6 border border-purple-200 text-center">
-                    <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                      <Target size={20} className="text-white" />
+                  <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-purple-200 text-center hover:shadow-xl transition-shadow duration-300">
+                    <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Target size={24} className="text-white" />
                     </div>
-                    <div className="text-2xl font-bold text-purple-800">
+                    <div className="text-3xl font-bold text-purple-800 mb-1">
                       {stats.completionRate}%
                     </div>
-                    <p className="text-purple-700 text-sm">Success Rate</p>
+                    <p className="text-purple-700 text-sm font-medium">
+                      Success Rate
+                    </p>
                   </div>
                 </div>
 
