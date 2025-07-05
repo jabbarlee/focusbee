@@ -8,6 +8,7 @@ import {
   User,
 } from "firebase/auth";
 import { auth } from "@/lib/config/firebase";
+import { syncUserToDatabase } from "@/lib/auth-db-sync";
 
 export interface AuthResult {
   success: boolean;
@@ -27,11 +28,25 @@ export async function signUpWithEmail(
       password
     );
 
-    // Update the user's display name
+    // Update the user's display name in Firebase
     if (userCredential.user) {
       await updateProfile(userCredential.user, {
         displayName: name,
       });
+
+      // Create user record in Supabase database
+      try {
+        const dbResult = await syncUserToDatabase(userCredential.user);
+
+        if (!dbResult.success) {
+          console.error("Failed to create user in database:", dbResult.error);
+          // Note: We don't fail the auth here since Firebase user was created successfully
+          // The user can still sign in and we'll try to create the DB record again
+        }
+      } catch (dbError) {
+        console.error("Database error during signup:", dbError);
+        // Continue with successful Firebase auth
+      }
     }
 
     return {
@@ -78,6 +93,21 @@ export async function signInWithEmail(
       email,
       password
     );
+
+    // Ensure user exists in database (create if missing)
+    if (userCredential.user) {
+      try {
+        const dbResult = await syncUserToDatabase(userCredential.user);
+
+        if (!dbResult.success) {
+          console.error("Failed to ensure user in database:", dbResult.error);
+          // Continue with successful Firebase auth
+        }
+      } catch (dbError) {
+        console.error("Database error during signin:", dbError);
+        // Continue with successful Firebase auth
+      }
+    }
 
     return {
       success: true,
