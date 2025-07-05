@@ -168,41 +168,36 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between p-6">
               {/* Logo and branding */}
               <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-300">
-                    <div className="text-2xl animate-pulse">🐝</div>
-                  </div>
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse"></div>
-                </div>
                 <div>
                   <h1 className="text-3xl font-bold text-amber-900 tracking-tight">
                     Focus<span className="text-amber-600">Bee</span>
-                    <span className="text-lg ml-2">🍯</span>
                   </h1>
                   <p className="text-sm text-amber-700 font-medium flex items-center gap-1">
                     <span>Your productivity hive</span>
-                    <span className="animate-bounce">✨</span>
                   </p>
                 </div>
               </div>
 
               {/* User section and navigation */}
               <div className="flex items-center gap-3">
-                {/* User avatar */}
-                <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-amber-500 rounded-full flex items-center justify-center text-white font-bold shadow-md border-2 border-white">
-                  {(user?.displayName || user?.email || "BB").charAt(0).toUpperCase()}
-                </div>
-
                 {/* Navigation buttons with enhanced design language */}
                 <div className="flex items-center gap-3">
                   {/* Settings button */}
                   <button
                     onClick={() => router.push("/account")}
-                    className="group relative flex items-center gap-2.5 px-5 py-3 bg-white/80 backdrop-blur-md hover:bg-white/90 text-amber-800 font-semibold rounded-2xl transition-all duration-300 border border-amber-200/60 hover:border-amber-300/80 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                    className="group relative flex items-center gap-2.5 px-5 py-3 bg-white/80 backdrop-blur-md hover:bg-white/90 text-amber-800 font-semibold rounded-2xl transition-all duration-300 border border-amber-200/60 hover:border-amber-300/80 shadow-lg hover:shadow-xl"
                     title="Account Settings"
                   >
-                    <svg className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+                    <svg
+                      className="w-5 h-5 transition-transform duration-300 group-hover:rotate-90"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                     <span className="hidden sm:inline">Settings</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-amber-100/0 via-amber-100/20 to-amber-100/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
@@ -212,12 +207,15 @@ export default function DashboardPage() {
                   <button
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="group relative flex items-center gap-2.5 px-5 py-3 bg-gradient-to-r from-red-50 to-rose-50 backdrop-blur-md hover:from-red-100 hover:to-rose-100 text-red-700 hover:text-red-800 font-semibold rounded-2xl transition-all duration-300 border border-red-200/60 hover:border-red-300/80 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100"
+                    className="group relative flex items-center gap-2.5 px-5 py-3 bg-gradient-to-r from-red-50 to-rose-50 backdrop-blur-md hover:from-red-100 hover:to-rose-100 text-red-700 hover:text-red-800 font-semibold rounded-2xl transition-all duration-300 border border-red-200/60 hover:border-red-300/80 shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {isLoggingOut ? (
                       <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <LogOut size={18} className="transition-transform duration-300 group-hover:-translate-x-0.5" />
+                      <LogOut
+                        size={18}
+                        className="transition-transform duration-300 group-hover:-translate-x-0.5"
+                      />
                     )}
                     <span className="hidden sm:inline">
                       {isLoggingOut ? "Buzzing away..." : "Sign Out"}
@@ -228,9 +226,6 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-
-          {/* Decorative honey drip */}
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-2 h-3 bg-gradient-to-b from-amber-300 to-amber-400 rounded-b-full opacity-60"></div>
         </header>
 
         {/* Main content */}
@@ -385,44 +380,6 @@ export default function DashboardPage() {
                       {formatTime(stats.weeklyFocus.reduce((a, b) => a + b, 0))}{" "}
                       🎉
                     </p>
-                  </div>
-                </div>
-
-                {/* Quick insights */}
-                <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-amber-200">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center">
-                      <Activity size={20} className="text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold text-amber-900">
-                      Quick Insights
-                    </h3>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center p-4 bg-amber-50 rounded-xl">
-                      <span className="text-amber-800 font-medium">
-                        Favorite Mode
-                      </span>
-                      <span className="font-bold text-amber-900 capitalize">
-                        {stats.favoriteMode.replace("-", " ")} 💛
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center p-4 bg-green-50 rounded-xl">
-                      <span className="text-green-800 font-medium">
-                        Average Session
-                      </span>
-                      <span className="font-bold text-green-900">
-                        {formatTime(stats.avgSessionLength)} ⏱️
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center p-4 bg-blue-50 rounded-xl">
-                      <span className="text-blue-800 font-medium">
-                        Completion Rate
-                      </span>
-                      <span className="font-bold text-blue-900">
-                        {stats.completedSessions}/{stats.totalSessions} ✅
-                      </span>
-                    </div>
                   </div>
                 </div>
               </div>
