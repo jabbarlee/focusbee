@@ -4,17 +4,14 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { focusModes, FocusMode } from "@/lib/data";
+import { focusModes, ritualSteps } from "@/lib/data";
 import {
-  User,
-  ArrowRight,
   ArrowLeft,
-  Smartphone,
-  Target,
   CheckCircle,
   Clock,
-  Zap,
   Timer,
+  Target,
+  Zap,
 } from "lucide-react";
 
 export default function SessionPage() {
@@ -63,44 +60,7 @@ export default function SessionPage() {
   }, [playQRScan, emitPhoneConnected, isConnected]);
 
   const timerOptions = focusModes;
-
-  const steps = [
-    {
-      title: "Welcome to FocusBee!",
-      subtitle: "Ready to create your focus ritual?",
-      instruction: "Stand up and pick up your phone",
-      action: "I'm standing",
-      icon: User,
-      color: "text-blue-500",
-    },
-    {
-      title: "Great! Now walk away",
-      subtitle: "Distance creates intention",
-      instruction:
-        "Walk to another room or at least 10 steps away from your workspace",
-      action: "I've walked away",
-      icon: ArrowRight,
-      color: "text-green-500",
-    },
-    {
-      title: "Perfect positioning!",
-      subtitle: "Time to create separation",
-      instruction:
-        "Place your phone face down in this location and leave it here",
-      action: "Phone is placed",
-      icon: Smartphone,
-      color: "text-orange-500",
-    },
-    {
-      title: "Ritual complete!",
-      subtitle: "Your focus zone is activated",
-      instruction:
-        "Return to your workspace. Your phone will stay here as a gentle reminder of your commitment to focus.",
-      action: "Start focusing",
-      icon: Target,
-      color: "text-purple-500",
-    },
-  ];
+  const steps = ritualSteps;
 
   // Countdown effect for step 1 (walk away step)
   useEffect(() => {
