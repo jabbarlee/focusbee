@@ -60,7 +60,7 @@ export default function DashboardPage() {
 
     const newId = generateUUID();
     setSessionId(newId);
-    const baseUrl = "http://10.0.1.24:3000";
+    const baseUrl = "http://10.0.1.94:3000";
     const qrUrl = `${baseUrl}/session/${newId}`;
     setQrValue(qrUrl);
 
