@@ -211,20 +211,6 @@ export default function DashboardPage() {
         {/* Main content */}
         <div className="px-4 md:px-8 py-8">
           <div className="max-w-7xl mx-auto">
-            {/* Welcome section */}
-            <div className="text-center mb-12">
-              <h2 className="text-4xl md:text-5xl font-bold text-amber-900 mb-6">
-                Hey there, wonderful bee! 🐝✨
-              </h2>
-              <p className="text-xl md:text-2xl text-amber-800 leading-relaxed max-w-3xl mx-auto mb-4">
-                I'm so excited to see you back in our cozy hive!
-              </p>
-              <p className="text-lg md:text-xl text-amber-700 leading-relaxed max-w-2xl mx-auto">
-                You've been doing absolutely amazing with your focus journey.
-                Ready for another productive adventure together?
-              </p>
-            </div>
-
             {/* Main content grid */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
               {/* QR Code Section - Takes up 5 columns on large screens */}
