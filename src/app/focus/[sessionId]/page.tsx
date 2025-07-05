@@ -3,18 +3,17 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
+import { useAuth } from "@/hooks/useAuth";
+import { focusModes, FocusMode } from "@/lib/data";
 import {
   Play,
   Pause,
   RotateCcw,
   Coffee,
   CheckCircle,
-  Timer,
-  Zap,
-  Flame,
   ArrowLeft,
-  Heart,
   Star,
+  Home,
 } from "lucide-react";
 
 interface TimerOption {
@@ -35,38 +34,12 @@ export default function FocusZonePage() {
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [selectedTimer, setSelectedTimer] = useState<TimerOption | null>(null);
+  const [selectedTimer, setSelectedTimer] = useState<FocusMode | null>(null);
   const { playSuccess, playNotification, playBuzz } = useSounds();
+  const { user, loading, isAuthenticated } = useAuth();
 
-  const timerOptions: TimerOption[] = [
-    {
-      id: "buzz-burst",
-      name: "Buzz Burst",
-      duration: 20,
-      description: "Quick, energetic session",
-      icon: Zap,
-      color: "from-yellow-400 to-orange-500",
-      textColor: "text-yellow-600",
-    },
-    {
-      id: "hive-hustle",
-      name: "Hive Hustle",
-      duration: 40,
-      description: "Solid work block",
-      icon: Flame,
-      color: "from-orange-400 to-red-500",
-      textColor: "text-orange-600",
-    },
-    {
-      id: "deep-dive",
-      name: "Deep Dive",
-      duration: 90,
-      description: "Long, immersive session",
-      icon: Timer,
-      color: "from-purple-400 to-indigo-500",
-      textColor: "text-purple-600",
-    },
-  ];
+  // Use centralized focus modes data
+  const timerOptions: FocusMode[] = focusModes;
 
   // Get timer info from URL params or localStorage
   useEffect(() => {
@@ -147,6 +120,10 @@ export default function FocusZonePage() {
     router.push("/signup");
   };
 
+  const handleGoToDashboard = () => {
+    router.push("/dashboard");
+  };
+
   // Friendly signup section component
   const SignupSection = () => (
     <div className="mt-8 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-3xl p-6 shadow-lg">
@@ -168,7 +145,10 @@ export default function FocusZonePage() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-center">
-          <button className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:shadow-lg flex items-center gap-2 group" onClick={handleJoinHive}>
+          <button
+            className="bg-amber-500 hover:bg-amber-600 text-white font-bold px-6 py-3 rounded-xl shadow-md hover:shadow-lg flex items-center gap-2 group"
+            onClick={handleJoinHive}
+          >
             <Star size={18} className="group-hover:animate-spin" />
             Join the Hive (Free!)
           </button>
@@ -240,7 +220,7 @@ export default function FocusZonePage() {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={handleReset}
                 className="flex-1 bg-amber-500 hover:bg-amber-600 hover:shadow-xl text-white font-bold px-8 py-4 rounded-2xl text-lg transition-all duration-200 shadow-lg h-16 flex items-center justify-center"
@@ -255,6 +235,17 @@ export default function FocusZonePage() {
                 <ArrowLeft size={20} />
                 Back to Session
               </button>
+
+              {/* Conditional dashboard button for authenticated users */}
+              {!loading && isAuthenticated && (
+                <button
+                  onClick={handleGoToDashboard}
+                  className="flex items-center justify-center gap-2 px-8 py-4 bg-green-500 hover:bg-green-600 hover:shadow-lg text-white font-bold rounded-2xl transition-all duration-200 h-16"
+                >
+                  <Home size={20} />
+                  Dashboard
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -284,14 +275,15 @@ export default function FocusZonePage() {
 
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
-        <header className="flex items-center justify-center p-6 relative">
+        <header className="flex items-center justify-between p-6 relative">
           <button
             onClick={handleBackToSession}
-            className="absolute left-6 flex items-center justify-center gap-2 px-6 py-3 bg-white/80 hover:bg-white text-amber-800 font-bold rounded-xl transition-colors duration-200 h-12"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-white/80 hover:bg-white text-amber-800 font-bold rounded-xl transition-colors duration-200 h-12"
           >
             <ArrowLeft size={20} />
             Back to Session
           </button>
+
           <div className="text-center">
             <h1 className="text-2xl font-bold text-amber-900">
               Focus<span className="text-amber-600">Bee</span>
@@ -300,6 +292,29 @@ export default function FocusZonePage() {
               Session: {sessionId?.slice(-8)}
             </p>
           </div>
+
+          {/* Conditional navigation */}
+          {!loading && (
+            <>
+              {isAuthenticated ? (
+                <button
+                  onClick={handleGoToDashboard}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-colors duration-200 h-12 shadow-md hover:shadow-lg"
+                >
+                  <Home size={20} />
+                  Dashboard
+                </button>
+              ) : (
+                <button
+                  onClick={handleJoinHive}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-colors duration-200 h-12 shadow-md hover:shadow-lg"
+                >
+                  <Star size={20} />
+                  Join Hive
+                </button>
+              )}
+            </>
+          )}
         </header>
 
         {/* Main timer area */}
@@ -434,8 +449,8 @@ export default function FocusZonePage() {
               </div>
             </div>
 
-            {/* Friendly signup section */}
-            <SignupSection />
+            {/* Friendly signup section - only show for unauthenticated users */}
+            {!loading && !isAuthenticated && <SignupSection />}
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signUpWithEmail } from "@/lib/auth";
 import {
   ArrowLeft,
   Mail,
@@ -25,6 +26,8 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -36,14 +39,44 @@ export default function SignupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    // Basic validation
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords don't match! Please check and try again.");
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
+
     setIsLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const result = await signUpWithEmail(
+        formData.name,
+        formData.email,
+        formData.password
+      );
+
+      if (result.success) {
+        setSuccess(result.message);
+        // Redirect to dashboard after a short delay
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1500);
+      } else {
+        setError(result.message);
+      }
+    } catch (error) {
+      setError("Something went wrong. Please try again.");
+      console.error("Signup error:", error);
+    } finally {
       setIsLoading(false);
-      // Redirect to dashboard or home page after successful signup
-      router.push("/");
-    }, 2000);
+    }
   };
 
   const handleBackToFocus = () => {
@@ -103,6 +136,18 @@ export default function SignupPage() {
             </div>
             {/* Signup form */}
             <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-amber-200">
+              {/* Error/Success messages */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-xl text-sm">
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="mb-4 p-3 bg-green-100 border border-green-300 text-green-700 rounded-xl text-sm">
+                  {success}
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Name field */}
                 <div>

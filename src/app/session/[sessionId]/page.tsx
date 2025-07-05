@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { focusModes, FocusMode } from "@/lib/data";
 import {
   User,
   ArrowRight,
@@ -11,10 +12,9 @@ import {
   Smartphone,
   Target,
   CheckCircle,
-  Zap,
   Clock,
+  Zap,
   Timer,
-  Flame,
 } from "lucide-react";
 
 export default function SessionPage() {
@@ -62,35 +62,7 @@ export default function SessionPage() {
     return () => clearTimeout(timer);
   }, [playQRScan, emitPhoneConnected, isConnected]);
 
-  const timerOptions = [
-    {
-      id: "buzz-burst",
-      name: "Buzz Burst",
-      duration: 20,
-      description: "Quick, energetic session to power through tasks",
-      icon: Zap,
-      color: "from-yellow-400 to-orange-500",
-      textColor: "text-yellow-600",
-    },
-    {
-      id: "hive-hustle",
-      name: "Hive Hustle",
-      duration: 40,
-      description: "Solid work block to build momentum and flow",
-      icon: Flame,
-      color: "from-orange-400 to-red-500",
-      textColor: "text-orange-600",
-    },
-    {
-      id: "deep-dive",
-      name: "Deep Dive",
-      duration: 90,
-      description: "Long, immersive session for serious deep work",
-      icon: Timer,
-      color: "from-purple-400 to-indigo-500",
-      textColor: "text-purple-600",
-    },
-  ];
+  const timerOptions = focusModes;
 
   const steps = [
     {
