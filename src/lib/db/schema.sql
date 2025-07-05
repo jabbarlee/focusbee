@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT,
   name TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
-  preferred_focus_mode TEXT
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
