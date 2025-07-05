@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signInWithEmail } from "@/lib/auth";
+import { signInWithEmail } from "@/actions/auth";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff, Star } from "lucide-react";
 
 export default function SigninPage() {
