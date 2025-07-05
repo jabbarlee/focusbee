@@ -11,8 +11,6 @@ import {
   Eye,
   EyeOff,
   Star,
-  Heart,
-  Zap,
 } from "lucide-react";
 
 export default function SignupPage() {
