@@ -8,7 +8,7 @@ import {
   User,
 } from "firebase/auth";
 import { auth } from "@/lib/config/firebase";
-import { syncUserToDatabase } from "@/lib/auth-db-sync";
+import { syncUserWithValidation } from "@/lib/auth-db-sync";
 
 export interface AuthResult {
   success: boolean;
@@ -36,12 +36,16 @@ export async function signUpWithEmail(
 
       // Create user record in Supabase database
       try {
-        const dbResult = await syncUserToDatabase(userCredential.user);
+        const dbResult = await syncUserWithValidation(userCredential.user);
 
         if (!dbResult.success) {
           console.error("Failed to create user in database:", dbResult.error);
           // Note: We don't fail the auth here since Firebase user was created successfully
           // The user can still sign in and we'll try to create the DB record again
+        } else if (dbResult.userCreated) {
+          console.log("✅ New user created in database");
+        } else {
+          console.log("ℹ️ User already exists in database");
         }
       } catch (dbError) {
         console.error("Database error during signup:", dbError);
@@ -97,11 +101,15 @@ export async function signInWithEmail(
     // Ensure user exists in database (create if missing)
     if (userCredential.user) {
       try {
-        const dbResult = await syncUserToDatabase(userCredential.user);
+        const dbResult = await syncUserWithValidation(userCredential.user);
 
         if (!dbResult.success) {
           console.error("Failed to ensure user in database:", dbResult.error);
           // Continue with successful Firebase auth
+        } else if (dbResult.userCreated) {
+          console.log("✅ User created in database during signin");
+        } else {
+          console.log("ℹ️ User already exists in database");
         }
       } catch (dbError) {
         console.error("Database error during signin:", dbError);

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { signOutUser } from "@/lib/auth";
+import { signOutUser } from "@/actions/auth";
 import {
   LogOut,
   Timer,
