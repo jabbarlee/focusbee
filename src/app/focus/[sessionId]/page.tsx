@@ -5,7 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
 import { useAuth } from "@/hooks/useAuth";
 import { focusModes, FocusMode } from "@/lib/data";
-import { getSessionById, completeSession } from "@/actions/db/sessions";
+import {
+  getSessionById,
+  completeSession,
+  cancelSession,
+} from "@/actions/db/sessions";
 import { Session } from "@/types/dbSchema";
 import {
   Play,
@@ -16,6 +20,7 @@ import {
   ArrowLeft,
   Star,
   Home,
+  X,
 } from "lucide-react";
 
 interface TimerOption {
@@ -154,8 +159,79 @@ export default function FocusZonePage() {
     router.push("/signup");
   };
 
-  const handleGoToDashboard = () => {
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  const handleGoToDashboard = async () => {
+    // Pause the timer and show confirmation modal
+    if (isRunning && !isPaused) {
+      setIsPaused(true);
+    }
+    setShowConfirmModal(true);
+  };
+
+  const confirmGoToDashboard = async () => {
+    // Complete the session before navigating to dashboard
+    if (sessionData && sessionData.status === "active") {
+      try {
+        const result = await completeSession(sessionData.id);
+        if (result.success) {
+          console.log("Session completed before navigating to dashboard");
+        } else {
+          console.error("Failed to complete session:", result.error);
+        }
+      } catch (error) {
+        console.error("Error completing session:", error);
+      }
+    }
+    setShowConfirmModal(false);
     router.push("/dashboard");
+  };
+
+  const cancelGoToDashboard = () => {
+    // Resume the timer if it was running before
+    if (isRunning) {
+      setIsPaused(false);
+    }
+    setShowConfirmModal(false);
+  };
+
+  const handleCompleteSession = async () => {
+    // Mark session as completed and navigate to dashboard
+    if (sessionData && sessionData.status === "active") {
+      try {
+        const result = await completeSession(sessionData.id);
+        if (result.success) {
+          console.log("Session completed successfully");
+          playSuccess();
+          setIsCompleted(true);
+        } else {
+          console.error("Failed to complete session:", result.error);
+        }
+      } catch (error) {
+        console.error("Error completing session:", error);
+      }
+    }
+  };
+
+  const handleCancelSession = async () => {
+    // Cancel the session and navigate to dashboard
+    if (sessionData && sessionData.status === "active") {
+      try {
+        const result = await cancelSession(sessionData.id);
+        if (result.success) {
+          console.log("Session cancelled successfully");
+          playNotification();
+          router.push("/dashboard");
+        } else {
+          console.error("Failed to cancel session:", result.error);
+        }
+      } catch (error) {
+        console.error("Error cancelling session:", error);
+      }
+    } else {
+      // If no active session, just navigate to dashboard
+      router.push("/dashboard");
+    }
   };
 
   // Friendly signup section component
@@ -277,7 +353,7 @@ export default function FocusZonePage() {
               {/* Conditional dashboard button for authenticated users */}
               {!loading && isAuthenticated && (
                 <button
-                  onClick={handleGoToDashboard}
+                  onClick={confirmGoToDashboard}
                   className="flex items-center justify-center gap-2 px-8 py-4 bg-green-500 hover:bg-green-600 hover:shadow-lg text-white font-bold rounded-2xl transition-all duration-200 h-16"
                 >
                   <Home size={20} />
@@ -375,7 +451,7 @@ export default function FocusZonePage() {
               </div>
             </div>
 
-            {/* Progress ring */}
+            {/* Progress ring with pause button inside */}
             <div className="relative w-80 h-80 mx-auto mb-8">
               <svg
                 className="w-full h-full transform -rotate-90"
@@ -418,45 +494,61 @@ export default function FocusZonePage() {
                 </defs>
               </svg>
 
-              {/* Timer display */}
+              {/* Timer display with integrated pause button */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <div className="text-6xl font-bold text-amber-900 mb-2">
                   {formatTime(timeRemaining)}
                 </div>
-                <div className="text-lg text-amber-700">
+                <div className="text-lg text-amber-700 mb-4">
                   {isPaused ? "Paused" : isRunning ? "Focusing..." : "Ready"}
                 </div>
+
+                {/* Pause/Resume button inside timer circle */}
+                <button
+                  onClick={handlePause}
+                  className={`flex items-center justify-center w-16 h-16 rounded-full font-bold transition-all duration-200 shadow-lg hover:shadow-xl ${
+                    isPaused
+                      ? "bg-green-500 hover:bg-green-600 text-white"
+                      : "bg-amber-500 hover:bg-amber-600 text-white"
+                  }`}
+                >
+                  {isPaused ? <Play size={24} /> : <Pause size={24} />}
+                </button>
               </div>
             </div>
 
-            {/* Control buttons */}
-            <div className="flex items-center justify-center gap-6">
+            {/* Compact control buttons */}
+            <div className="flex items-center justify-center gap-4 mb-8">
               <button
-                onClick={handlePause}
-                className={`flex items-center justify-center gap-2 px-8 py-4 rounded-2xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl h-16 ${
-                  isPaused
-                    ? "bg-green-500 hover:bg-green-600 text-white"
-                    : "bg-amber-500 hover:bg-amber-600 text-white"
-                }`}
+                onClick={handleCompleteSession}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-green-500 hover:bg-green-600 hover:shadow-xl text-white font-bold rounded-xl transition-all duration-200 shadow-lg"
               >
-                {isPaused ? <Play size={24} /> : <Pause size={24} />}
-                {isPaused ? "Resume" : "Pause"}
+                <CheckCircle size={20} />
+                Complete
               </button>
 
               <button
                 onClick={handleReset}
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-gray-500 hover:bg-gray-600 hover:shadow-xl text-white font-bold rounded-2xl transition-all duration-200 shadow-lg h-16"
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-500 hover:bg-gray-600 hover:shadow-xl text-white font-bold rounded-xl transition-all duration-200 shadow-lg"
               >
-                <RotateCcw size={20} />
+                <RotateCcw size={16} />
                 Reset
               </button>
 
               <button
-                onClick={handleBreak}
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-blue-500 hover:bg-blue-600 hover:shadow-xl text-white font-bold rounded-2xl transition-all duration-200 shadow-lg h-16"
+                onClick={handleCancelSession}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-600 hover:shadow-xl text-white font-bold rounded-xl transition-all duration-200 shadow-lg"
               >
-                <Coffee size={20} />
-                Take a Break
+                <X size={16} />
+                Cancel
+              </button>
+
+              <button
+                onClick={handleBreak}
+                className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-500 hover:bg-blue-600 hover:shadow-xl text-white font-bold rounded-xl transition-all duration-200 shadow-lg"
+              >
+                <Coffee size={16} />
+                Break
               </button>
             </div>
 
@@ -491,6 +583,41 @@ export default function FocusZonePage() {
             {!loading && !isAuthenticated && <SignupSection />}
           </div>
         </div>
+
+        {/* Confirmation modal */}
+        {showConfirmModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white rounded-2xl p-8 shadow-2xl border border-amber-200 max-w-md mx-4">
+              <div className="text-center mb-6">
+                <h3 className="text-2xl font-bold text-amber-900 mb-3">
+                  Complete this session?
+                </h3>
+                <p className="text-amber-800 leading-relaxed">
+                  Your focus session is still active. If you go to the dashboard
+                  now, this session will be marked as complete.
+                </p>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <button
+                  onClick={confirmGoToDashboard}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Home size={18} />
+                  Go to Dashboard
+                </button>
+
+                <button
+                  onClick={cancelGoToDashboard}
+                  className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Play size={18} />
+                  Continue Session
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
