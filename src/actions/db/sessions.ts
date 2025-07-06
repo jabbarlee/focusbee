@@ -13,6 +13,7 @@ export interface CreateSessionData {
 export interface UpdateSessionData {
   end_time?: string;
   status?: SessionStatus;
+  focus_mode?: FocusMode;
 }
 
 export interface SessionWithDuration extends Session {
@@ -350,8 +351,8 @@ export async function getUserStats(uid: string): Promise<
         totalFocusTime += duration;
       }
 
-      // Count mode usage
-      if (session.status === "completed" && session.focus_mode in modeCount) {
+      // Count focus modes
+      if (session.focus_mode && session.focus_mode in modeCount) {
         modeCount[session.focus_mode as FocusMode]++;
       }
     });
@@ -359,41 +360,31 @@ export async function getUserStats(uid: string): Promise<
     // Find favorite mode
     let favoriteMode: FocusMode | null = null;
     let maxCount = 0;
-    (Object.entries(modeCount) as [FocusMode, number][]).forEach(
-      ([mode, count]) => {
-        if (count > maxCount) {
-          maxCount = count;
-          favoriteMode = mode;
-        }
+    Object.entries(modeCount).forEach(([mode, count]) => {
+      if (count > maxCount) {
+        maxCount = count;
+        favoriteMode = mode as FocusMode;
       }
-    );
+    });
 
-    // Calculate streak (simplified - consecutive days with completed sessions)
-    // This is a basic implementation - you might want to make it more sophisticated
-    const completedSessionsByDate = sessions
-      .filter((s) => s.status === "completed")
-      .map((s) => new Date(s.start_time).toDateString())
-      .filter((date, index, arr) => arr.indexOf(date) === index) // unique dates
-      .sort();
-
+    // Calculate streak (simplified - consecutive days with sessions)
+    const today = new Date();
     let streakDays = 0;
-    if (completedSessionsByDate.length > 0) {
-      const today = new Date().toDateString();
-      let currentDate = new Date();
+    const sessionDates = sessions
+      .filter((s) => s.status === "completed")
+      .map((s) => new Date(s.created_at).toDateString())
+      .filter((date, index, arr) => arr.indexOf(date) === index)
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
-      for (let i = 0; i < 365; i++) {
-        // Check up to a year back
-        const dateStr = currentDate.toDateString();
-        if (completedSessionsByDate.includes(dateStr)) {
-          streakDays++;
-          currentDate.setDate(currentDate.getDate() - 1);
-        } else if (dateStr !== today) {
-          // If we're not on today and there's no session, break the streak
-          break;
-        } else {
-          // Skip today if no session (streak continues)
-          currentDate.setDate(currentDate.getDate() - 1);
-        }
+    for (let i = 0; i < sessionDates.length; i++) {
+      const sessionDate = new Date(sessionDates[i]);
+      const expectedDate = new Date(today);
+      expectedDate.setDate(today.getDate() - i);
+
+      if (sessionDate.toDateString() === expectedDate.toDateString()) {
+        streakDays++;
+      } else {
+        break;
       }
     }
 

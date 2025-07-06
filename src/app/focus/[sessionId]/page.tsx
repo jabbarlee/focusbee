@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
 import { useAuth } from "@/hooks/useAuth";
 import { focusModes, FocusMode } from "@/lib/data";
+import { getSessionById, completeSession } from "@/actions/db/sessions";
+import { Session } from "@/types/dbSchema";
 import {
   Play,
   Pause,
@@ -35,27 +37,55 @@ export default function FocusZonePage() {
   const [isPaused, setIsPaused] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [selectedTimer, setSelectedTimer] = useState<FocusMode | null>(null);
+  const [sessionData, setSessionData] = useState<Session | null>(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
   const { playSuccess, playNotification, playBuzz } = useSounds();
   const { user, loading, isAuthenticated } = useAuth();
 
   // Use centralized focus modes data
   const timerOptions: FocusMode[] = focusModes;
 
-  // Get timer info from URL params or localStorage
+  // Fetch session data from database
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const timerId = urlParams.get("timer");
+    const fetchSessionData = async () => {
+      if (!sessionId) return;
 
-    if (timerId) {
-      const timer = timerOptions.find((t) => t.id === timerId);
-      if (timer) {
-        setSelectedTimer(timer);
-        setTimeRemaining(timer.duration * 60); // Convert minutes to seconds
-        setIsRunning(true);
-        playBuzz();
+      setIsLoadingSession(true);
+      try {
+        const result = await getSessionById(sessionId);
+
+        if (result.success && result.data) {
+          const session = result.data;
+          setSessionData(session);
+
+          // Find the corresponding timer from focus modes
+          const timer = timerOptions.find((t) => t.id === session.focus_mode);
+          if (timer) {
+            setSelectedTimer(timer);
+            setTimeRemaining(timer.duration * 60); // Convert minutes to seconds
+            setIsRunning(true);
+            playBuzz();
+          } else {
+            console.error(
+              "Timer not found for focus mode:",
+              session.focus_mode
+            );
+          }
+        } else {
+          console.error("Session not found:", result.error);
+          // Redirect to dashboard if session not found
+          router.push("/dashboard");
+        }
+      } catch (error) {
+        console.error("Error fetching session:", error);
+        router.push("/dashboard");
+      } finally {
+        setIsLoadingSession(false);
       }
-    }
-  }, [playBuzz]);
+    };
+
+    fetchSessionData();
+  }, [sessionId, playBuzz, router]);
 
   // Timer countdown effect
   useEffect(() => {
@@ -67,6 +97,10 @@ export default function FocusZonePage() {
           if (prev <= 1) {
             setIsRunning(false);
             setIsCompleted(true);
+            // Mark session as completed in database
+            if (sessionData) {
+              completeSession(sessionData.id).catch(console.error);
+            }
             playSuccess();
             return 0;
           }
@@ -76,7 +110,7 @@ export default function FocusZonePage() {
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, isPaused, timeRemaining, playSuccess]);
+  }, [isRunning, isPaused, timeRemaining, playSuccess, sessionData]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -161,12 +195,16 @@ export default function FocusZonePage() {
     </div>
   );
 
-  if (!selectedTimer) {
+  if (isLoadingSession || !selectedTimer) {
     return (
       <div className="min-h-screen bg-bee-gradient flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-amber-800">Loading your focus session...</p>
+          <p className="text-amber-800">
+            {isLoadingSession
+              ? "Loading your focus session..."
+              : "Preparing your focus zone..."}
+          </p>
         </div>
       </div>
     );

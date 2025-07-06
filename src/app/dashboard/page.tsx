@@ -8,6 +8,11 @@ import { signOutUser } from "@/actions/auth";
 import { useSounds } from "@/hooks/useSounds";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import {
+  createSession,
+  getUserStats,
+  updateSession,
+} from "@/actions/db/sessions";
+import {
   LogOut,
   Smartphone,
   Trophy,
@@ -28,6 +33,9 @@ export default function DashboardPage() {
   const [isPhoneConnected, setIsPhoneConnected] = useState(false);
   const [ritualStep, setRitualStep] = useState("");
   const [isWaitingForSession, setIsWaitingForSession] = useState(false);
+  const [selectedFocusMode, setSelectedFocusMode] = useState<
+    "quick-buzz" | "honey-flow" | "deep-nectar"
+  >("honey-flow");
   const { playNotification, playBuzz } = useSounds();
 
   // Boilerplate statistics data
@@ -48,27 +56,40 @@ export default function DashboardPage() {
     }
   }, [loading, isAuthenticated, router]);
 
-  // Generate session ID and QR code
+  // Create session when component mounts
   useEffect(() => {
-    const generateUUID = () => {
-      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-        const r = (Math.random() * 16) | 0;
-        const v = c === "x" ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
-      });
+    const createNewSession = async () => {
+      if (!user?.uid) return;
+
+      try {
+        const result = await createSession({
+          uid: user.uid,
+          focus_mode: selectedFocusMode, // Start with default focus mode
+        });
+
+        if (result.success && result.data) {
+          const newSessionId = result.data.id;
+          setSessionId(newSessionId);
+
+          // Generate QR code with the database session ID
+          const baseUrl = "http://10.0.1.94:3000";
+          const qrUrl = `${baseUrl}/session/${newSessionId}`;
+          setQrValue(qrUrl);
+
+          const timer = setTimeout(() => {
+            playNotification();
+          }, 500);
+          return () => clearTimeout(timer);
+        } else {
+          console.error("Failed to create session:", result.error);
+        }
+      } catch (error) {
+        console.error("Error creating session:", error);
+      }
     };
 
-    const newId = generateUUID();
-    setSessionId(newId);
-    const baseUrl = "http://10.0.1.94:3000";
-    const qrUrl = `${baseUrl}/session/${newId}`;
-    setQrValue(qrUrl);
-
-    const timer = setTimeout(() => {
-      playNotification();
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [playNotification]);
+    createNewSession();
+  }, [user?.uid, playNotification]);
 
   const { isConnected } = useWebSocket({
     sessionId: sessionId || "",
@@ -81,11 +102,34 @@ export default function DashboardPage() {
     },
     onTimerSelected: (data) => {
       setRitualStep(`Timer selected: ${data.timerName}`);
+      // Update the selected focus mode based on the timer selection
+      const focusMode = data.timer as
+        | "quick-buzz"
+        | "honey-flow"
+        | "deep-nectar";
+      setSelectedFocusMode(focusMode);
+
+      // Update the existing session with the correct focus mode
+      if (sessionId) {
+        updateSession(sessionId, {
+          focus_mode: focusMode,
+        })
+          .then((result) => {
+            if (result.success) {
+              console.log("Session updated with focus mode:", focusMode);
+            } else {
+              console.error("Failed to update session:", result.error);
+            }
+          })
+          .catch((error) => {
+            console.error("Error updating session:", error);
+          });
+      }
     },
     onRitualComplete: (data) => {
       setIsWaitingForSession(true);
       setTimeout(() => {
-        router.push(`/focus/${sessionId}?timer=${data.timer}`);
+        router.push(`/focus/${sessionId}`);
       }, 2000);
     },
   });
