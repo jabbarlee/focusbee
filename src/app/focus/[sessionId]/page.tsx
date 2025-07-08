@@ -354,10 +354,13 @@ export default function FocusZonePage() {
               {!loading && isAuthenticated && (
                 <button
                   onClick={confirmGoToDashboard}
-                  className="flex items-center justify-center gap-2 px-8 py-4 bg-green-500 hover:bg-green-600 hover:shadow-lg text-white font-bold rounded-2xl transition-all duration-200 h-16"
+                  className="group flex items-center gap-2 px-6 py-3 bg-white/90 backdrop-blur-sm hover:bg-white border border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
                 >
-                  <Home size={20} />
-                  Dashboard
+                  <Home
+                    size={16}
+                    className="transition-transform group-hover:scale-110"
+                  />
+                  <span className="text-sm">Dashboard</span>
                 </button>
               )}
             </div>
@@ -492,7 +495,7 @@ export default function FocusZonePage() {
                     <div className="text-7xl font-bold text-amber-900 tracking-tight text-center">
                       {formatTime(timeRemaining)}
                     </div>
-                    
+
                     {/* Pause/Resume button */}
                     <div className="mt-4">
                       <button
