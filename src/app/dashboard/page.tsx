@@ -159,7 +159,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-bee-gradient flex items-center justify-center">
+      <div className="min-h-screen bg-bee-soft flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4" />
           <p className="text-amber-800">Loading your hive dashboard...</p>
@@ -174,7 +174,7 @@ export default function DashboardPage() {
 
   if (isWaitingForSession) {
     return (
-      <div className="min-h-screen bg-bee-gradient flex items-center justify-center">
+      <div className="min-h-screen bg-bee-soft flex items-center justify-center">
         <div className="text-center">
           <div className="w-24 h-24 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-pulse">
             <Clock size={48} className="text-white" />
@@ -191,7 +191,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-bee-gradient relative overflow-hidden">
+    <div className="min-h-screen bg-bee-soft relative overflow-hidden">
       {/* Honeycomb background */}
       <div className="absolute inset-0 opacity-20">
         <div className="grid grid-cols-8 gap-4 p-8 transform rotate-12 scale-150">
@@ -207,16 +207,16 @@ export default function DashboardPage() {
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
         <header className="relative">
-          {/* Header background with gradient */}
-          <div className="bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-50 border-b border-amber-200/50 backdrop-blur-sm">
+          {/* Header background with sophisticated gradient */}
+          <div className="bg-gradient-to-r from-yellow-50/80 via-amber-50/60 to-yellow-50/80 border-b border-yellow-200/50 backdrop-blur-sm shadow-sm">
             <div className="flex items-center justify-between p-6">
               {/* Logo and branding */}
               <div className="flex items-center gap-4">
                 <div>
-                  <h1 className="text-3xl font-bold text-amber-900 tracking-tight">
+                  <h1 className="text-3xl font-bold text-yellow-900 tracking-tight">
                     Focus<span className="text-amber-600">Bee</span>
                   </h1>
-                  <p className="text-sm text-amber-700 font-medium flex items-center gap-1">
+                  <p className="text-sm text-yellow-700 font-medium flex items-center gap-1">
                     <span>Your productivity hive</span>
                   </p>
                 </div>
@@ -229,7 +229,7 @@ export default function DashboardPage() {
                   {/* Settings button */}
                   <button
                     onClick={() => router.push("/account")}
-                    className="group relative flex items-center gap-2.5 px-5 py-3 bg-white/80 backdrop-blur-md hover:bg-white/90 text-amber-800 font-semibold rounded-2xl transition-all duration-300 border border-amber-200/60 hover:border-amber-300/80 shadow-lg hover:shadow-xl"
+                    className="group relative flex items-center gap-2.5 px-5 py-3 bg-white/90 backdrop-blur-md hover:bg-white text-yellow-800 hover:text-yellow-900 font-semibold rounded-2xl transition-all duration-300 border border-yellow-200/60 hover:border-yellow-300/80 shadow-md hover:shadow-lg"
                     title="Account Settings"
                   >
                     <svg
@@ -244,7 +244,7 @@ export default function DashboardPage() {
                       />
                     </svg>
                     <span className="hidden sm:inline">Settings</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-amber-100/0 via-amber-100/20 to-amber-100/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/0 via-yellow-100/30 to-yellow-100/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   </button>
 
                   {/* Logout button */}

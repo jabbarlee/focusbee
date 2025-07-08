@@ -149,7 +149,7 @@ export default function SessionPage() {
   // Timer selection screen
   if (!timerConfirmed) {
     return (
-      <div className="min-h-screen bg-bee-gradient relative overflow-hidden">
+      <div className="min-h-screen bg-bee-soft relative overflow-hidden">
         {/* Background honeycomb pattern */}
         <div className="absolute inset-0 opacity-15">
           <div className="grid grid-cols-6 gap-3 p-4 transform rotate-12 scale-150">
@@ -254,7 +254,7 @@ export default function SessionPage() {
 
   if (!isStarted) {
     return (
-      <div className="min-h-screen bg-bee-gradient relative overflow-hidden">
+      <div className="min-h-screen bg-bee-soft relative overflow-hidden">
         {/* Background honeycomb pattern - lighter for mobile */}
         <div className="absolute inset-0 opacity-15">
           <div className="grid grid-cols-6 gap-3 p-4 transform rotate-12 scale-150">
@@ -350,7 +350,7 @@ export default function SessionPage() {
 
   if (currentStep >= steps.length) {
     return (
-      <div className="min-h-screen bg-bee-gradient relative overflow-hidden">
+      <div className="min-h-screen bg-bee-soft relative overflow-hidden">
         <div className="absolute inset-0 opacity-15">
           <div className="grid grid-cols-6 gap-3 p-4 transform rotate-12 scale-150">
             {Array.from({ length: 36 }).map((_, i) => (
@@ -436,7 +436,7 @@ export default function SessionPage() {
   const progress = ((currentStep + 1) / steps.length) * 100;
 
   return (
-    <div className="min-h-screen bg-bee-gradient relative overflow-hidden">
+    <div className="min-h-screen bg-bee-soft relative overflow-hidden">
       {/* Background honeycomb pattern */}
       <div className="absolute inset-0 opacity-15">
         <div className="grid grid-cols-6 gap-3 p-4 transform rotate-12 scale-150">

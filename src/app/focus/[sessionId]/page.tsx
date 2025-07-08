@@ -273,7 +273,7 @@ export default function FocusZonePage() {
 
   if (isLoadingSession || !selectedTimer) {
     return (
-      <div className="min-h-screen bg-bee-gradient flex items-center justify-center">
+      <div className="min-h-screen bg-bee-soft flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
           <p className="text-amber-800">
@@ -288,7 +288,7 @@ export default function FocusZonePage() {
 
   if (isCompleted) {
     return (
-      <div className="min-h-screen bg-bee-gradient relative overflow-hidden">
+      <div className="min-h-screen bg-bee-soft relative overflow-hidden">
         {/* Background honeycomb pattern */}
         <div className="absolute inset-0 opacity-20">
           <div className="grid grid-cols-8 gap-4 p-8 transform rotate-12 scale-150">
@@ -377,7 +377,7 @@ export default function FocusZonePage() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-bee-gradient relative overflow-hidden">
+    <div className="min-h-screen bg-bee-soft relative overflow-hidden">
       {/* Background honeycomb pattern */}
       <div className="absolute inset-0 opacity-20">
         <div className="grid grid-cols-8 gap-4 p-8 transform rotate-12 scale-150">

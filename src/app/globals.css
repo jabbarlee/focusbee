@@ -156,3 +156,23 @@
 .bg-bee-gradient {
   background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
 }
+
+.bg-bee-soft {
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #fffef9 30%,
+    #fffcf5 70%,
+    #fefaf0 100%
+  );
+}
+
+.bg-bee-soft {
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #fffef9 30%,
+    #fffcf5 70%,
+    #fefaf0 100%
+  );
+}
