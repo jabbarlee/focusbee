@@ -450,130 +450,48 @@ export default function FocusZonePage() {
                 </p>
               </div>
             </div>{" "}
-            {/* Premium timer design */}
+            {/* Simple Circle Timer */}
             <div className="relative flex items-center justify-center mb-8">
-              {/* Timer card with elevated design */}
-              <div className="relative bg-gradient-to-br from-white via-amber-50/50 to-orange-50/30 rounded-3xl p-12 shadow-2xl border border-amber-100/50 backdrop-blur-sm">
-                {/* Decorative rings */}
-                <div className="absolute inset-4 rounded-2xl border border-amber-200/30"></div>
-                <div className="absolute inset-8 rounded-xl border border-amber-300/20"></div>
+              {/* Main circular timer container */}
+              <div className="relative w-96 h-96 rounded-full bg-white shadow-lg border-2 border-amber-200">
+                {/* Simple circular progress ring */}
+                <svg
+                  className="absolute inset-4 w-88 h-88 transform -rotate-90"
+                  viewBox="0 0 100 100"
+                >
+                  {/* Background track */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="46"
+                    fill="none"
+                    stroke="#f3f4f6"
+                    strokeWidth="4"
+                  />
 
-                {/* Progress visualization */}
-                <div className="relative w-72 h-72 mx-auto">
-                  {/* Outer decorative ring */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 opacity-30"></div>
+                  {/* Progress track */}
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="46"
+                    fill="none"
+                    stroke="#f59e0b"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray={`${progress * 2.89} ${
+                      (100 - progress) * 2.89
+                    }`}
+                    className="transition-all duration-1000 ease-out"
+                  />
+                </svg>
 
-                  {/* Main progress ring */}
-                  <svg
-                    className="absolute inset-4 w-64 h-64 transform -rotate-90"
-                    viewBox="0 0 100 100"
-                  >
-                    {/* Background track */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="46"
-                      fill="none"
-                      stroke="rgba(251, 191, 36, 0.15)"
-                      strokeWidth="2"
-                    />
-
-                    {/* Progress track */}
-                    <circle
-                      cx="50"
-                      cy="50"
-                      r="46"
-                      fill="none"
-                      stroke="url(#mainGradient)"
-                      strokeWidth="3"
-                      strokeLinecap="round"
-                      strokeDasharray={`${progress * 2.89} ${
-                        (100 - progress) * 2.89
-                      }`}
-                      className="transition-all duration-1000 ease-out"
-                      style={{
-                        filter: "drop-shadow(0 0 12px rgba(251, 191, 36, 0.4))",
-                      }}
-                    />
-
-                    <defs>
-                      <linearGradient
-                        id="mainGradient"
-                        x1="0%"
-                        y1="0%"
-                        x2="100%"
-                        y2="0%"
-                      >
-                        <stop offset="0%" stopColor="#fbbf24" />
-                        <stop offset="50%" stopColor="#f59e0b" />
-                        <stop offset="100%" stopColor="#d97706" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-
-                  {/* Central content */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    {/* Time display */}
-                    <div className="text-center mb-8">
-                      <div
-                        className="text-6xl font-bold text-amber-900 mb-3 tracking-tight leading-none"
-                        style={{
-                          fontFeatureSettings: '"tnum"',
-                          textShadow: "0 2px 4px rgba(0,0,0,0.1)",
-                        }}
-                      >
-                        {formatTime(timeRemaining)}
-                      </div>
-
-                      {/* Status indicator */}
-                      <div className="flex items-center justify-center gap-3 mb-6">
-                        <div
-                          className={`w-3 h-3 rounded-full transition-all duration-500 ${
-                            isPaused
-                              ? "bg-yellow-500 animate-pulse shadow-lg shadow-yellow-500/50"
-                              : isRunning
-                              ? "bg-green-500 animate-pulse shadow-lg shadow-green-500/50"
-                              : "bg-gray-400"
-                          }`}
-                        ></div>
-                        <span className="text-lg font-semibold text-amber-800">
-                          {isPaused
-                            ? "Paused"
-                            : isRunning
-                            ? "Focusing"
-                            : "Ready"}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Central control button */}
-                    <button
-                      onClick={handlePause}
-                      className={`group relative flex items-center justify-center w-20 h-20 rounded-full transition-all duration-300 transform hover:scale-110 active:scale-95 ${
-                        isPaused
-                          ? "bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/30"
-                          : "bg-gradient-to-br from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 shadow-lg shadow-amber-500/30"
-                      } border-4 border-white`}
-                    >
-                      <div className="text-white">
-                        {isPaused ? <Play size={32} /> : <Pause size={32} />}
-                      </div>
-
-                      {/* Ripple effect */}
-                      <div className="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                    </button>
-
-                    {/* Progress text */}
-                    <div className="mt-6 text-center">
-                      <div className="text-sm font-medium text-amber-700/80 uppercase tracking-widest">
-                        {Math.round(progress)}% Complete
-                      </div>
-                    </div>
+                {/* Central content */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  {/* Time display - perfectly centered */}
+                  <div className="text-7xl font-bold text-amber-900 tracking-tight text-center">
+                    {formatTime(timeRemaining)}
                   </div>
                 </div>
-
-                {/* Ambient glow effect */}
-                <div className="absolute -inset-6 bg-gradient-to-br from-amber-200/20 to-orange-200/20 rounded-3xl blur-2xl -z-10"></div>
               </div>
             </div>
             {/* Refined control buttons */}
