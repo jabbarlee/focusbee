@@ -496,33 +496,37 @@ export default function FocusZonePage() {
                       {formatTime(timeRemaining)}
                     </div>
 
-                    {/* Pause/Resume button */}
-                    <div className="mt-4">
+                    {/* Pause/Resume and Reset buttons */}
+                    <div className="mt-4 flex gap-3">
                       <button
                         onClick={handlePause}
-                        className={`group flex items-center gap-2 px-6 py-3 bg-white/90 backdrop-blur-sm hover:bg-white border transition-all duration-200 shadow-sm hover:shadow-md font-semibold rounded-xl ${
+                        className={`group flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white border transition-all duration-200 shadow-sm hover:shadow-md font-semibold rounded-xl ${
                           isPaused
                             ? "border-green-200 hover:border-green-300 text-green-700 hover:text-green-800"
                             : "border-amber-200 hover:border-amber-300 text-amber-700 hover:text-amber-800"
                         }`}
                       >
                         {isPaused ? (
-                          <>
-                            <Play
-                              size={16}
-                              className="transition-transform group-hover:scale-110"
-                            />
-                            <span className="text-sm">Resume</span>
-                          </>
+                          <Play
+                            size={16}
+                            className="transition-transform group-hover:scale-110"
+                          />
                         ) : (
-                          <>
-                            <Pause
-                              size={16}
-                              className="transition-transform group-hover:scale-110"
-                            />
-                            <span className="text-sm">Pause</span>
-                          </>
+                          <Pause
+                            size={16}
+                            className="transition-transform group-hover:scale-110"
+                          />
                         )}
+                      </button>
+
+                      <button
+                        onClick={handleReset}
+                        className="group flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white border border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-800 font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
+                      >
+                        <RotateCcw
+                          size={16}
+                          className="transition-transform group-hover:rotate-180"
+                        />
                       </button>
                     </div>
                   </div>
@@ -540,17 +544,6 @@ export default function FocusZonePage() {
                   className="transition-transform group-hover:scale-110"
                 />
                 <span className="text-sm">Complete</span>
-              </button>
-
-              <button
-                onClick={handleReset}
-                className="group flex items-center gap-2 px-6 py-3 bg-white/90 backdrop-blur-sm hover:bg-white border border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-800 font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
-              >
-                <RotateCcw
-                  size={16}
-                  className="transition-transform group-hover:rotate-180"
-                />
-                <span className="text-sm">Reset</span>
               </button>
 
               <button
