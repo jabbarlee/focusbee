@@ -117,7 +117,13 @@ export default function SessionPage() {
 
       // Emit ritual completion via WebSocket
       if (selectedTimer) {
+        console.log(
+          "Emitting ritual complete with selected timer:",
+          selectedTimer
+        ); // Debug log
         emitRitualComplete(selectedTimer);
+      } else {
+        console.error("No timer selected when completing ritual!"); // Debug log
       }
 
       setCurrentStep((prev) => prev + 1);
@@ -143,7 +149,14 @@ export default function SessionPage() {
     // Emit timer selection via WebSocket
     const selectedTimerData = timerOptions.find((t) => t.id === selectedTimer);
     if (selectedTimerData) {
+      console.log(
+        "Emitting timer selected:",
+        selectedTimer,
+        selectedTimerData.name
+      ); // Debug log
       emitTimerSelected(selectedTimer!, selectedTimerData.name);
+    } else {
+      console.error("Could not find timer data for:", selectedTimer); // Debug log
     }
   };
 

@@ -141,7 +141,6 @@ export default function DashboardPage() {
 
     fetchStats();
   }, [user?.uid]);
-
   const { isConnected } = useWebSocket({
     sessionId: sessionId || "",
     onPhoneConnected: () => {
@@ -160,7 +159,7 @@ export default function DashboardPage() {
         | "deep-nectar";
       setSelectedFocusMode(focusMode);
 
-      // Note: We don't create/update session here - only when ritual is complete
+      console.log("Timer selected in ritual:", focusMode); // Debug log
     },
     onRitualComplete: async (data) => {
       setIsWaitingForSession(true);
@@ -171,10 +170,20 @@ export default function DashboardPage() {
         return;
       }
 
+      // Use the focus mode directly from the ritual completion data to avoid race conditions
+      const finalFocusMode = data.timer as
+        | "quick-buzz"
+        | "honey-flow"
+        | "deep-nectar";
+      console.log(
+        "Creating session with focus mode from ritual data:",
+        finalFocusMode
+      ); // Debug log
+
       try {
         const result = await createSession({
           uid: user.uid,
-          focus_mode: selectedFocusMode,
+          focus_mode: finalFocusMode, // Use focus mode directly from ritual completion
         });
 
         if (result.success && result.data) {

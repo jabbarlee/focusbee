@@ -27,6 +27,8 @@ export async function createSession(
   sessionData: CreateSessionData
 ): Promise<DatabaseResult<Session>> {
   try {
+    console.log("Creating session with data:", sessionData); // Debug log
+
     const insertData: any = {
       uid: sessionData.uid,
       focus_mode: sessionData.focus_mode,
@@ -37,6 +39,8 @@ export async function createSession(
     if (sessionData.start_time) {
       insertData.start_time = sessionData.start_time;
     }
+
+    console.log("Inserting data into database:", insertData); // Debug log
 
     const { data, error } = await supabase
       .from("sessions")
@@ -51,6 +55,8 @@ export async function createSession(
         error: error.message,
       };
     }
+
+    console.log("Session created successfully:", data); // Debug log
 
     return {
       success: true,
