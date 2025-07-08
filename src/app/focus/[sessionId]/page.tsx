@@ -485,11 +485,43 @@ export default function FocusZonePage() {
                   />
                 </svg>
 
-                {/* Central content */}
+                {/* Central content - Time display and button centered together */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  {/* Time display - perfectly centered */}
-                  <div className="text-7xl font-bold text-amber-900 tracking-tight text-center">
-                    {formatTime(timeRemaining)}
+                  <div className="flex flex-col items-center">
+                    {/* Time display */}
+                    <div className="text-7xl font-bold text-amber-900 tracking-tight text-center">
+                      {formatTime(timeRemaining)}
+                    </div>
+                    
+                    {/* Pause/Resume button */}
+                    <div className="mt-4">
+                      <button
+                        onClick={handlePause}
+                        className={`group flex items-center gap-2 px-6 py-3 bg-white/90 backdrop-blur-sm hover:bg-white border transition-all duration-200 shadow-sm hover:shadow-md font-semibold rounded-xl ${
+                          isPaused
+                            ? "border-green-200 hover:border-green-300 text-green-700 hover:text-green-800"
+                            : "border-amber-200 hover:border-amber-300 text-amber-700 hover:text-amber-800"
+                        }`}
+                      >
+                        {isPaused ? (
+                          <>
+                            <Play
+                              size={16}
+                              className="transition-transform group-hover:scale-110"
+                            />
+                            <span className="text-sm">Resume</span>
+                          </>
+                        ) : (
+                          <>
+                            <Pause
+                              size={16}
+                              className="transition-transform group-hover:scale-110"
+                            />
+                            <span className="text-sm">Pause</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
