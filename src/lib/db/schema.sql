@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
   uid TEXT PRIMARY KEY,         -- Firebase UID
   email TEXT,
   name TEXT,
-  created_at TIMESTAMPTZ DEFAULT now(),
+  created_at TIMESTAMPTZ DEFAULT now()
 );
 
 CREATE TABLE IF NOT EXISTS sessions (

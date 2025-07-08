@@ -406,3 +406,142 @@ export async function getUserStats(uid: string): Promise<
     };
   }
 }
+
+/**
+ * Get weekly focus statistics for the last 7 days
+ */
+export async function getWeeklyStats(uid: string): Promise<
+  DatabaseResult<{
+    weeklyFocus: number[]; // Array of 7 numbers (minutes per day, Mon-Sun)
+    avgSessionLength: number;
+    completionRate: number;
+  }>
+> {
+  try {
+    // Get sessions from the last 7 days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6); // Include today, so -6 for 7 days total
+    sevenDaysAgo.setHours(0, 0, 0, 0); // Start of day
+
+    const { data: sessions, error } = await supabase
+      .from("sessions")
+      .select("*")
+      .eq("uid", uid)
+      .gte("created_at", sevenDaysAgo.toISOString());
+
+    if (error) {
+      console.error("Error fetching weekly stats:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    // Initialize weekly focus array (Mon-Sun)
+    const weeklyFocus = [0, 0, 0, 0, 0, 0, 0];
+    let totalSessionTime = 0;
+    let completedSessionsCount = 0;
+    const totalSessionsCount = sessions.length;
+
+    sessions.forEach((session) => {
+      const sessionDate = new Date(session.created_at);
+      // Convert to Monday=0, Tuesday=1, ..., Sunday=6
+      const dayOfWeek = (sessionDate.getDay() + 6) % 7;
+
+      if (
+        session.status === "completed" &&
+        session.start_time &&
+        session.end_time
+      ) {
+        const startTime = new Date(session.start_time);
+        const endTime = new Date(session.end_time);
+        const duration = Math.round(
+          (endTime.getTime() - startTime.getTime()) / (1000 * 60)
+        );
+
+        // Only count positive durations
+        if (duration > 0) {
+          weeklyFocus[dayOfWeek] += duration;
+          totalSessionTime += duration;
+          completedSessionsCount++;
+        }
+      }
+    });
+
+    const avgSessionLength =
+      completedSessionsCount > 0
+        ? Math.round(totalSessionTime / completedSessionsCount)
+        : 0;
+
+    const completionRate =
+      totalSessionsCount > 0
+        ? Math.round((completedSessionsCount / totalSessionsCount) * 100)
+        : 0;
+
+    return {
+      success: true,
+      data: {
+        weeklyFocus,
+        avgSessionLength,
+        completionRate,
+      },
+    };
+  } catch (error) {
+    console.error("Unexpected error calculating weekly stats:", error);
+    return {
+      success: false,
+      error: "Failed to calculate weekly statistics",
+    };
+  }
+}
+
+/**
+ * Clean up orphaned active sessions for a user
+ * This should be called when dashboard loads to ensure data integrity
+ */
+export async function cleanupOrphanedSessions(
+  uid: string
+): Promise<DatabaseResult<number>> {
+  try {
+    // Find active sessions older than 1 hour that are likely orphaned
+    const oneHourAgo = new Date();
+    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+
+    const { data, error } = await supabase
+      .from("sessions")
+      .update({
+        status: "cancelled",
+        end_time: new Date().toISOString(),
+      })
+      .eq("uid", uid)
+      .eq("status", "active")
+      .lt("created_at", oneHourAgo.toISOString())
+      .select();
+
+    if (error) {
+      console.error("Error cleaning up orphaned sessions:", error);
+      return {
+        success: false,
+        error: error.message,
+      };
+    }
+
+    const cleanedCount = data ? data.length : 0;
+    if (cleanedCount > 0) {
+      console.log(
+        `Cleaned up ${cleanedCount} orphaned sessions for user ${uid}`
+      );
+    }
+
+    return {
+      success: true,
+      data: cleanedCount,
+    };
+  } catch (error) {
+    console.error("Unexpected error cleaning up orphaned sessions:", error);
+    return {
+      success: false,
+      error: "Failed to cleanup orphaned sessions",
+    };
+  }
+}

@@ -11,7 +11,9 @@ import { Button } from "@/components/ui";
 import {
   createSession,
   getUserStats,
+  getWeeklyStats,
   updateSession,
+  cleanupOrphanedSessions,
 } from "@/actions/db/sessions";
 import {
   LogOut,
@@ -39,17 +41,18 @@ export default function DashboardPage() {
   >("honey-flow");
   const { playNotification, playBuzz } = useSounds();
 
-  // Boilerplate statistics data
-  const [stats] = useState({
-    totalSessions: 24,
-    completedSessions: 18,
-    totalFocusTime: 1260, // minutes
-    streakDays: 7,
-    favoriteMode: "honey-flow",
-    weeklyFocus: [45, 60, 90, 45, 75, 120, 90],
-    avgSessionLength: 70,
-    completionRate: 75,
+  // Real statistics data from database
+  const [stats, setStats] = useState({
+    totalSessions: 0,
+    completedSessions: 0,
+    totalFocusTime: 0, // minutes
+    streakDays: 0,
+    favoriteMode: "honey-flow" as "quick-buzz" | "honey-flow" | "deep-nectar",
+    weeklyFocus: [0, 0, 0, 0, 0, 0, 0],
+    avgSessionLength: 0,
+    completionRate: 0,
   });
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -57,40 +60,87 @@ export default function DashboardPage() {
     }
   }, [loading, isAuthenticated, router]);
 
-  // Create session when component mounts
+  // Generate QR code for connecting phone (without creating session)
   useEffect(() => {
-    const createNewSession = async () => {
+    const generateQRCode = () => {
       if (!user?.uid) return;
 
+      // Generate a temporary session ID for QR code (not saved to database yet)
+      const tempSessionId = `temp_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+      setSessionId(tempSessionId);
+
+      // Generate QR code with the temporary session ID
+      const baseUrl = "http://10.0.1.94:3000";
+      const qrUrl = `${baseUrl}/session/${tempSessionId}`;
+      setQrValue(qrUrl);
+
+      const timer = setTimeout(() => {
+        playNotification();
+      }, 500);
+      return () => clearTimeout(timer);
+    };
+
+    generateQRCode();
+  }, [user?.uid, playNotification]); // Fetch user statistics and cleanup orphaned sessions
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!user?.uid) return;
+
+      setIsLoadingStats(true);
       try {
-        const result = await createSession({
-          uid: user.uid,
-          focus_mode: selectedFocusMode, // Start with default focus mode
-        });
+        // First, cleanup any orphaned sessions
+        await cleanupOrphanedSessions(user.uid);
 
-        if (result.success && result.data) {
-          const newSessionId = result.data.id;
-          setSessionId(newSessionId);
+        // Fetch basic user stats
+        const statsResult = await getUserStats(user.uid);
 
-          // Generate QR code with the database session ID
-          const baseUrl = "http://10.0.1.94:3000";
-          const qrUrl = `${baseUrl}/session/${newSessionId}`;
-          setQrValue(qrUrl);
+        // Fetch weekly stats
+        const weeklyResult = await getWeeklyStats(user.uid);
 
-          const timer = setTimeout(() => {
-            playNotification();
-          }, 500);
-          return () => clearTimeout(timer);
+        if (
+          statsResult.success &&
+          statsResult.data &&
+          weeklyResult.success &&
+          weeklyResult.data
+        ) {
+          setStats({
+            totalSessions: statsResult.data.totalSessions,
+            completedSessions: statsResult.data.completedSessions,
+            totalFocusTime: statsResult.data.totalFocusTime,
+            streakDays: statsResult.data.streakDays,
+            favoriteMode: statsResult.data.favoriteMode || "honey-flow",
+            weeklyFocus: weeklyResult.data.weeklyFocus,
+            avgSessionLength: weeklyResult.data.avgSessionLength,
+            completionRate: weeklyResult.data.completionRate,
+          });
         } else {
-          console.error("Failed to create session:", result.error);
+          console.error("Failed to fetch stats:", {
+            statsError: statsResult.error,
+            weeklyError: weeklyResult.error,
+          });
+          // Set default values if data fetch fails
+          setStats({
+            totalSessions: 0,
+            completedSessions: 0,
+            totalFocusTime: 0,
+            streakDays: 0,
+            favoriteMode: "honey-flow",
+            weeklyFocus: [0, 0, 0, 0, 0, 0, 0],
+            avgSessionLength: 0,
+            completionRate: 0,
+          });
         }
       } catch (error) {
-        console.error("Error creating session:", error);
+        console.error("Error fetching statistics:", error);
+      } finally {
+        setIsLoadingStats(false);
       }
     };
 
-    createNewSession();
-  }, [user?.uid, playNotification]);
+    fetchStats();
+  }, [user?.uid]);
 
   const { isConnected } = useWebSocket({
     sessionId: sessionId || "",
@@ -110,28 +160,46 @@ export default function DashboardPage() {
         | "deep-nectar";
       setSelectedFocusMode(focusMode);
 
-      // Update the existing session with the correct focus mode
-      if (sessionId) {
-        updateSession(sessionId, {
-          focus_mode: focusMode,
-        })
-          .then((result) => {
-            if (result.success) {
-              console.log("Session updated with focus mode:", focusMode);
-            } else {
-              console.error("Failed to update session:", result.error);
-            }
-          })
-          .catch((error) => {
-            console.error("Error updating session:", error);
-          });
-      }
+      // Note: We don't create/update session here - only when ritual is complete
     },
-    onRitualComplete: (data) => {
+    onRitualComplete: async (data) => {
       setIsWaitingForSession(true);
-      setTimeout(() => {
-        router.push(`/focus/${sessionId}`);
-      }, 2000);
+
+      // NOW create the actual database session when ritual is completed
+      if (!user?.uid) {
+        console.error("No user ID available for session creation");
+        return;
+      }
+
+      try {
+        const result = await createSession({
+          uid: user.uid,
+          focus_mode: selectedFocusMode,
+        });
+
+        if (result.success && result.data) {
+          const realSessionId = result.data.id;
+          setSessionId(realSessionId); // Update with real session ID
+
+          console.log("Session created successfully:", realSessionId);
+
+          setTimeout(() => {
+            router.push(`/focus/${realSessionId}`);
+          }, 2000);
+        } else {
+          console.error("Failed to create session:", result.error);
+          // Still navigate but with temp ID - the focus page will handle this
+          setTimeout(() => {
+            router.push(`/focus/${sessionId}`);
+          }, 2000);
+        }
+      } catch (error) {
+        console.error("Error creating session:", error);
+        // Still navigate but with temp ID
+        setTimeout(() => {
+          router.push(`/focus/${sessionId}`);
+        }, 2000);
+      }
     },
   });
 
@@ -369,7 +437,11 @@ export default function DashboardPage() {
                       <Trophy size={24} className="text-white" />
                     </div>
                     <div className="text-3xl font-bold text-amber-900 mb-1">
-                      {stats.totalSessions}
+                      {isLoadingStats ? (
+                        <div className="animate-pulse bg-amber-200 h-8 w-16 rounded mx-auto"></div>
+                      ) : (
+                        stats.totalSessions
+                      )}
                     </div>
                     <p className="text-amber-700 text-sm font-medium">
                       Total Sessions
@@ -381,7 +453,11 @@ export default function DashboardPage() {
                       <Clock size={24} className="text-white" />
                     </div>
                     <div className="text-3xl font-bold text-green-800 mb-1">
-                      {formatTime(stats.totalFocusTime)}
+                      {isLoadingStats ? (
+                        <div className="animate-pulse bg-green-200 h-8 w-20 rounded mx-auto"></div>
+                      ) : (
+                        formatTime(stats.totalFocusTime)
+                      )}
                     </div>
                     <p className="text-green-700 text-sm font-medium">
                       Total Focus Time
@@ -393,7 +469,11 @@ export default function DashboardPage() {
                       <Flame size={24} className="text-white" />
                     </div>
                     <div className="text-3xl font-bold text-orange-800 mb-1">
-                      {stats.streakDays}
+                      {isLoadingStats ? (
+                        <div className="animate-pulse bg-orange-200 h-8 w-12 rounded mx-auto"></div>
+                      ) : (
+                        stats.streakDays
+                      )}
                     </div>
                     <p className="text-orange-700 text-sm font-medium">
                       Day Streak
@@ -405,7 +485,11 @@ export default function DashboardPage() {
                       <Target size={24} className="text-white" />
                     </div>
                     <div className="text-3xl font-bold text-purple-800 mb-1">
-                      {stats.completionRate}%
+                      {isLoadingStats ? (
+                        <div className="animate-pulse bg-purple-200 h-8 w-16 rounded mx-auto"></div>
+                      ) : (
+                        `${stats.completionRate}%`
+                      )}
                     </div>
                     <p className="text-purple-700 text-sm font-medium">
                       Success Rate
@@ -424,44 +508,81 @@ export default function DashboardPage() {
                     </h3>
                   </div>
                   <div className="flex items-end gap-2 h-32 mb-4">
-                    {stats.weeklyFocus.map((minutes, index) => {
-                      const height =
-                        (minutes / Math.max(...stats.weeklyFocus)) * 100;
-                      const days = [
-                        "Mon",
-                        "Tue",
-                        "Wed",
-                        "Thu",
-                        "Fri",
-                        "Sat",
-                        "Sun",
-                      ];
-                      return (
-                        <div
-                          key={index}
-                          className="flex-1 flex flex-col items-center gap-1"
-                        >
-                          <div className="w-full bg-amber-100 rounded-t-xl relative">
+                    {isLoadingStats
+                      ? // Loading skeleton for weekly chart
+                        Array.from({ length: 7 }).map((_, index) => (
+                          <div
+                            key={index}
+                            className="flex-1 flex flex-col items-center gap-1"
+                          >
+                            <div className="w-full bg-amber-100 rounded-t-xl relative">
+                              <div
+                                className="w-full bg-amber-200 rounded-t-xl animate-pulse"
+                                style={{
+                                  height: `${Math.random() * 60 + 20}%`,
+                                }}
+                              />
+                            </div>
+                            <span className="text-amber-700 text-xs font-bold">
+                              {
+                                [
+                                  "Mon",
+                                  "Tue",
+                                  "Wed",
+                                  "Thu",
+                                  "Fri",
+                                  "Sat",
+                                  "Sun",
+                                ][index]
+                              }
+                            </span>
+                          </div>
+                        ))
+                      : stats.weeklyFocus.map((minutes, index) => {
+                          const maxMinutes = Math.max(...stats.weeklyFocus);
+                          const height =
+                            maxMinutes > 0 ? (minutes / maxMinutes) * 100 : 0;
+                          const days = [
+                            "Mon",
+                            "Tue",
+                            "Wed",
+                            "Thu",
+                            "Fri",
+                            "Sat",
+                            "Sun",
+                          ];
+                          return (
                             <div
-                              className="w-full bg-gradient-to-t from-amber-400 to-amber-500 rounded-t-xl flex items-end justify-center"
-                              style={{ height: `${height}%` }}
+                              key={index}
+                              className="flex-1 flex flex-col items-center gap-1"
                             >
-                              <span className="text-white text-xs font-bold mb-1">
-                                {minutes}m
+                              <div className="w-full bg-amber-100 rounded-t-xl relative">
+                                <div
+                                  className="w-full bg-gradient-to-t from-amber-400 to-amber-500 rounded-t-xl flex items-end justify-center"
+                                  style={{ height: `${height}%` }}
+                                >
+                                  {minutes > 0 && (
+                                    <span className="text-white text-xs font-bold mb-1">
+                                      {minutes}m
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <span className="text-amber-700 text-xs font-bold">
+                                {days[index]}
                               </span>
                             </div>
-                          </div>
-                          <span className="text-amber-700 text-xs font-bold">
-                            {days[index]}
-                          </span>
-                        </div>
-                      );
-                    })}
+                          );
+                        })}
                   </div>
                   <div className="bg-amber-50 rounded-xl p-4 text-center">
                     <p className="text-amber-800 font-semibold">
                       Total this week:{" "}
-                      {formatTime(stats.weeklyFocus.reduce((a, b) => a + b, 0))}{" "}
+                      {isLoadingStats ? (
+                        <span className="inline-block animate-pulse bg-amber-200 h-4 w-16 rounded"></span>
+                      ) : (
+                        formatTime(stats.weeklyFocus.reduce((a, b) => a + b, 0))
+                      )}{" "}
                       🎉
                     </p>
                   </div>
@@ -469,19 +590,39 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Motivation */}
-            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-3xl p-8 shadow-lg text-center">
-              <h3 className="text-xl md:text-2xl font-bold text-amber-900 mb-6">
-                Your Daily Bee Wisdom 🌻
-              </h3>
-              <p className="text-lg md:text-xl text-amber-700 leading-relaxed">
-                "Remember, even the busiest bees take time to rest between
-                flights! You're doing incredible work building these focus
-                habits. I'm so proud of how far you've come, and I can't wait to
-                see what amazing things you'll accomplish next! Keep being
-                awesome! 🌟"
-              </p>
-            </div>
+            {/* Motivation or Welcome Message */}
+            {!isLoadingStats && stats.totalSessions === 0 ? (
+              // First-time user welcome message
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-3xl p-8 shadow-lg text-center">
+                <h3 className="text-xl md:text-2xl font-bold text-blue-900 mb-6">
+                  Welcome to your FocusBee Hive! 🎉
+                </h3>
+                <p className="text-lg md:text-xl text-blue-700 leading-relaxed mb-4">
+                  "Buzz buzz! I'm so excited to help you on your focus journey!
+                  Your hive is ready and waiting. Scan the QR code above to
+                  start your very first focus session and let's build some
+                  amazing productivity habits together! 🐝✨"
+                </p>
+                <p className="text-md text-blue-600">
+                  Once you complete your first session, I'll start tracking your
+                  progress and showing you beautiful statistics right here!
+                </p>
+              </div>
+            ) : (
+              // Regular motivation for existing users
+              <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-3xl p-8 shadow-lg text-center">
+                <h3 className="text-xl md:text-2xl font-bold text-amber-900 mb-6">
+                  Your Daily Bee Wisdom 🌻
+                </h3>
+                <p className="text-lg md:text-xl text-amber-700 leading-relaxed">
+                  "Remember, even the busiest bees take time to rest between
+                  flights! You're doing incredible work building these focus
+                  habits. I'm so proud of how far you've come, and I can't wait
+                  to see what amazing things you'll accomplish next! Keep being
+                  awesome! 🌟"
+                </p>
+              </div>
+            )}
           </div>
         </main>
       </div>

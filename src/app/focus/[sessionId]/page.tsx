@@ -56,6 +56,13 @@ export default function FocusZonePage() {
     const fetchSessionData = async () => {
       if (!sessionId) return;
 
+      // Check if this is a temporary session ID (not from database)
+      if (sessionId.startsWith("temp_")) {
+        console.log("Temporary session ID detected, redirecting to dashboard");
+        router.push("/dashboard");
+        return;
+      }
+
       setIsLoadingSession(true);
       try {
         const result = await getSessionById(sessionId);
@@ -76,6 +83,16 @@ export default function FocusZonePage() {
               "Timer not found for focus mode:",
               session.focus_mode
             );
+            // Use default timer if not found
+            const defaultTimer = timerOptions.find(
+              (t) => t.id === "honey-flow"
+            );
+            if (defaultTimer) {
+              setSelectedTimer(defaultTimer);
+              setTimeRemaining(defaultTimer.duration * 60);
+              setIsRunning(true);
+              playBuzz();
+            }
           }
         } else {
           console.error("Session not found:", result.error);
@@ -398,13 +415,15 @@ export default function FocusZonePage() {
 
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
-        <header className="flex items-center justify-between p-6 relative">
-          <Button variant="outline" size="md" onClick={handleBackToSession}>
-            <ArrowLeft size={20} />
-            Back to Session
-          </Button>
+        <header className="flex items-center p-6 relative">
+          <div className="flex-1">
+            <Button variant="outline" size="md" onClick={handleBackToSession}>
+              <ArrowLeft size={20} />
+              Back to Session
+            </Button>
+          </div>
 
-          <div className="text-center">
+          <div className="text-center absolute left-1/2 transform -translate-x-1/2">
             <h1 className="text-2xl font-bold text-amber-900">
               Focus<span className="text-amber-600">Bee</span>
             </h1>
@@ -413,26 +432,28 @@ export default function FocusZonePage() {
             </p>
           </div>
 
-          {/* Conditional navigation */}
-          {!loading && (
-            <>
-              {isAuthenticated ? (
-                <Button
-                  variant="default"
-                  size="md"
-                  onClick={handleGoToDashboard}
-                >
-                  <Home size={20} />
-                  Dashboard
-                </Button>
-              ) : (
-                <Button variant="default" size="md" onClick={handleJoinHive}>
-                  <Star size={20} />
-                  Join Hive
-                </Button>
-              )}
-            </>
-          )}
+          <div className="flex-1 flex justify-end">
+            {/* Conditional navigation */}
+            {!loading && (
+              <>
+                {isAuthenticated ? (
+                  <Button
+                    variant="default"
+                    size="md"
+                    onClick={handleGoToDashboard}
+                  >
+                    <Home size={20} />
+                    Dashboard
+                  </Button>
+                ) : (
+                  <Button variant="default" size="md" onClick={handleJoinHive}>
+                    <Star size={20} />
+                    Join Hive
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
         </header>
 
         {/* Main timer area */}
@@ -535,34 +556,40 @@ export default function FocusZonePage() {
               </div>
             </div>
             {/* Refined control buttons */}
-            <div className="flex items-center justify-center gap-4 mb-8">
-              <Button
-                variant="success"
-                size="sm"
-                onClick={handleCompleteSession}
-              >
-                <CheckCircle
-                  size={16}
-                  className="transition-transform group-hover:scale-110"
-                />
-                <span className="text-sm">Complete</span>
-              </Button>
+            <div className="w-full flex justify-center mb-8">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="success"
+                  size="sm"
+                  onClick={handleCompleteSession}
+                >
+                  <CheckCircle
+                    size={16}
+                    className="transition-transform group-hover:scale-110"
+                  />
+                  <span className="text-sm">Complete</span>
+                </Button>
 
-              <Button variant="danger" size="sm" onClick={handleCancelSession}>
-                <X
-                  size={16}
-                  className="transition-transform group-hover:rotate-90"
-                />
-                <span className="text-sm">Cancel</span>
-              </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={handleCancelSession}
+                >
+                  <X
+                    size={16}
+                    className="transition-transform group-hover:rotate-90"
+                  />
+                  <span className="text-sm">Cancel</span>
+                </Button>
 
-              <Button variant="warning" size="sm" onClick={handleBreak}>
-                <Coffee
-                  size={16}
-                  className="transition-transform group-hover:scale-110"
-                />
-                <span className="text-sm">Break</span>
-              </Button>
+                <Button variant="warning" size="sm" onClick={handleBreak}>
+                  <Coffee
+                    size={16}
+                    className="transition-transform group-hover:scale-110"
+                  />
+                  <span className="text-sm">Break</span>
+                </Button>
+              </div>
             </div>
             {/* Session stats */}
             <div className="mt-12 bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-amber-200">
