@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { signOutUser } from "@/actions/auth";
 import { useSounds } from "@/hooks/useSounds";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { Button } from "@/components/ui";
 import {
   createSession,
   getUserStats,
@@ -227,9 +228,10 @@ export default function DashboardPage() {
                 {/* Navigation buttons with enhanced design language */}
                 <div className="flex items-center gap-3">
                   {/* Settings button */}
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="md"
                     onClick={() => router.push("/account")}
-                    className="group relative flex items-center gap-2.5 px-5 py-3 bg-white/90 backdrop-blur-md hover:bg-white text-yellow-800 hover:text-yellow-900 font-semibold rounded-2xl transition-all duration-300 border border-yellow-200/60 hover:border-yellow-300/80 shadow-md hover:shadow-lg"
                     title="Account Settings"
                   >
                     <svg
@@ -244,14 +246,14 @@ export default function DashboardPage() {
                       />
                     </svg>
                     <span className="hidden sm:inline">Settings</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/0 via-yellow-100/30 to-yellow-100/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </button>
+                  </Button>
 
                   {/* Logout button */}
-                  <button
+                  <Button
+                    variant="danger"
+                    size="md"
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="group relative flex items-center gap-2.5 px-5 py-3 bg-gradient-to-r from-red-50 to-rose-50 backdrop-blur-md hover:from-red-100 hover:to-rose-100 text-red-700 hover:text-red-800 font-semibold rounded-2xl transition-all duration-300 border border-red-200/60 hover:border-red-300/80 shadow-lg hover:shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {isLoggingOut ? (
                       <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
@@ -264,8 +266,7 @@ export default function DashboardPage() {
                     <span className="hidden sm:inline">
                       {isLoggingOut ? "Buzzing away..." : "Sign Out"}
                     </span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-red-100/0 via-red-100/20 to-red-100/0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

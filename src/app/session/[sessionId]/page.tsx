@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { focusModes, ritualSteps } from "@/lib/data";
+import { Button } from "@/components/ui";
 import {
   ArrowLeft,
   CheckCircle,
@@ -232,13 +233,13 @@ export default function SessionPage() {
 
             {/* Continue Button - only shows when timer is selected */}
             {selectedTimer && (
-              <button
+              <Button
                 onClick={handleConfirmTimer}
-                className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-2xl text-lg transition-all duration-200 shadow-lg mb-6 transform hover:scale-105"
+                className="w-full text-lg py-4 px-8 mb-6 transform hover:scale-105"
               >
                 Continue with{" "}
                 {timerOptions.find((t) => t.id === selectedTimer)?.name}
-              </button>
+              </Button>
             )}
 
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg border border-amber-200">
@@ -327,20 +328,21 @@ export default function SessionPage() {
             </div>
 
             <div className="flex gap-3">
-              <button
+              <Button
                 onClick={() => setTimerConfirmed(false)}
-                className="flex items-center gap-2 px-4 py-3 bg-amber-100 hover:bg-amber-200 text-amber-800 font-medium rounded-xl transition-colors duration-200"
+                variant="secondary"
+                className="flex items-center gap-2 px-4 py-3"
               >
                 <ArrowLeft size={20} />
                 Change Timer
-              </button>
+              </Button>
 
-              <button
+              <Button
                 onClick={handleStart}
-                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 px-8 rounded-2xl text-lg transition-colors duration-200 shadow-lg"
+                className="flex-1 py-4 px-8 text-lg shadow-lg"
               >
                 Start Focus Ritual
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -511,15 +513,15 @@ export default function SessionPage() {
               )}
             </div>
 
-            <button
+            <Button
               onClick={handleStepComplete}
               disabled={
                 currentStep === 1 && (isCountdownActive || countdown === null)
               }
-              className={`w-full font-bold py-4 px-8 rounded-2xl text-lg transition-all duration-200 shadow-lg ${
+              className={`w-full py-4 px-8 text-lg shadow-lg ${
                 currentStep === 1 && (isCountdownActive || countdown === null)
-                  ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  : "bg-amber-500 hover:bg-amber-600 text-white hover:scale-105"
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:scale-105"
               }`}
             >
               {currentStep === 1 && isCountdownActive
@@ -527,7 +529,7 @@ export default function SessionPage() {
                 : currentStep === 1 && countdown === 0
                 ? "I've walked away ✓"
                 : step.action}
-            </button>
+            </Button>
 
             {/* Session info */}
             <div className="mt-6 pt-6 border-t border-amber-300/30">

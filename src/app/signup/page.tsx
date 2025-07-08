@@ -3,15 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signUpWithEmail } from "@/actions/auth";
-import {
-  ArrowLeft,
-  Mail,
-  Lock,
-  User,
-  Eye,
-  EyeOff,
-  Star,
-} from "lucide-react";
+import { Button } from "@/components/ui";
+import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, Star } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -102,13 +95,14 @@ export default function SignupPage() {
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* Header */}
         <header className="flex items-center justify-center p-6 relative">
-          <button
+          <Button
             onClick={handleBackToFocus}
-            className="absolute left-6 flex items-center justify-center gap-2 px-6 py-3 bg-white/80 hover:bg-white text-amber-800 font-bold rounded-xl transition-colors duration-200 h-12"
+            variant="ghost"
+            className="absolute left-6 flex items-center gap-2 px-6 py-3 h-12"
           >
             <ArrowLeft size={20} />
             Back
-          </button>
+          </Button>
           <div className="text-center">
             <h1 className="text-2xl font-bold text-amber-900">
               Focus<span className="text-amber-600">Bee</span>
@@ -256,10 +250,10 @@ export default function SignupPage() {
                 </div>
 
                 {/* Submit button */}
-                <button
+                <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white font-bold py-4 rounded-xl transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 group"
+                  className="w-full py-4 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 group disabled:opacity-50"
                 >
                   {isLoading ? (
                     <>
@@ -275,19 +269,20 @@ export default function SignupPage() {
                       Join the Hive! 🎉
                     </>
                   )}
-                </button>
+                </Button>
               </form>
 
               {/* Footer */}
               <div className="mt-6 text-center">
                 <p className="text-sm text-amber-700">
                   Already part of the hive?{" "}
-                  <button
+                  <Button
                     onClick={handleSignInRedirect}
-                    className="font-semibold text-amber-800 hover:text-amber-900 underline transition-colors duration-200"
+                    variant="ghost"
+                    className="font-semibold underline p-0 h-auto"
                   >
                     Sign in here
-                  </button>
+                  </Button>
                 </p>
               </div>
             </div>{" "}

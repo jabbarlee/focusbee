@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
 import { useAuth } from "@/hooks/useAuth";
 import { focusModes, FocusMode } from "@/lib/data";
+import { Button } from "@/components/ui";
 import {
   getSessionById,
   completeSession,
@@ -335,33 +336,38 @@ export default function FocusZonePage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <button
+              <Button
+                variant="default"
+                size="lg"
                 onClick={handleReset}
-                className="flex-1 bg-amber-500 hover:bg-amber-600 hover:shadow-xl text-white font-bold px-8 py-4 rounded-2xl text-lg transition-all duration-200 shadow-lg h-16 flex items-center justify-center"
+                className="flex-1"
               >
                 Start Another Session
-              </button>
+              </Button>
 
-              <button
+              <Button
+                variant="secondary"
+                size="lg"
                 onClick={handleBackToSession}
-                className="flex items-center justify-center gap-2 px-8 py-4 bg-amber-100 hover:bg-amber-200 hover:shadow-lg text-amber-800 font-bold rounded-2xl transition-all duration-200 h-16"
+                className="bg-amber-100 hover:bg-amber-200 text-amber-800"
               >
                 <ArrowLeft size={20} />
                 Back to Session
-              </button>
+              </Button>
 
               {/* Conditional dashboard button for authenticated users */}
               {!loading && isAuthenticated && (
-                <button
+                <Button
+                  variant="warning"
+                  size="sm"
                   onClick={confirmGoToDashboard}
-                  className="group flex items-center gap-2 px-6 py-3 bg-white/90 backdrop-blur-sm hover:bg-white border border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
                 >
                   <Home
                     size={16}
                     className="transition-transform group-hover:scale-110"
                   />
                   <span className="text-sm">Dashboard</span>
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -393,13 +399,10 @@ export default function FocusZonePage() {
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
         <header className="flex items-center justify-between p-6 relative">
-          <button
-            onClick={handleBackToSession}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-white/80 hover:bg-white text-amber-800 font-bold rounded-xl transition-colors duration-200 h-12"
-          >
+          <Button variant="outline" size="md" onClick={handleBackToSession}>
             <ArrowLeft size={20} />
             Back to Session
-          </button>
+          </Button>
 
           <div className="text-center">
             <h1 className="text-2xl font-bold text-amber-900">
@@ -414,21 +417,19 @@ export default function FocusZonePage() {
           {!loading && (
             <>
               {isAuthenticated ? (
-                <button
+                <Button
+                  variant="default"
+                  size="md"
                   onClick={handleGoToDashboard}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-colors duration-200 h-12 shadow-md hover:shadow-lg"
                 >
                   <Home size={20} />
                   Dashboard
-                </button>
+                </Button>
               ) : (
-                <button
-                  onClick={handleJoinHive}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition-colors duration-200 h-12 shadow-md hover:shadow-lg"
-                >
+                <Button variant="default" size="md" onClick={handleJoinHive}>
                   <Star size={20} />
                   Join Hive
-                </button>
+                </Button>
               )}
             </>
           )}
@@ -535,38 +536,33 @@ export default function FocusZonePage() {
             </div>
             {/* Refined control buttons */}
             <div className="flex items-center justify-center gap-4 mb-8">
-              <button
+              <Button
+                variant="success"
+                size="sm"
                 onClick={handleCompleteSession}
-                className="group flex items-center gap-2 px-6 py-3 bg-white/90 backdrop-blur-sm hover:bg-white border border-green-200 hover:border-green-300 text-green-700 hover:text-green-800 font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 <CheckCircle
                   size={16}
                   className="transition-transform group-hover:scale-110"
                 />
                 <span className="text-sm">Complete</span>
-              </button>
+              </Button>
 
-              <button
-                onClick={handleCancelSession}
-                className="group flex items-center gap-2 px-6 py-3 bg-white/90 backdrop-blur-sm hover:bg-white border border-red-200 hover:border-red-300 text-red-700 hover:text-red-800 font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
-              >
+              <Button variant="danger" size="sm" onClick={handleCancelSession}>
                 <X
                   size={16}
                   className="transition-transform group-hover:rotate-90"
                 />
                 <span className="text-sm">Cancel</span>
-              </button>
+              </Button>
 
-              <button
-                onClick={handleBreak}
-                className="group flex items-center gap-2 px-6 py-3 bg-white/90 backdrop-blur-sm hover:bg-white border border-blue-200 hover:border-blue-300 text-blue-700 hover:text-blue-800 font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
-              >
+              <Button variant="warning" size="sm" onClick={handleBreak}>
                 <Coffee
                   size={16}
                   className="transition-transform group-hover:scale-110"
                 />
                 <span className="text-sm">Break</span>
-              </button>
+              </Button>
             </div>
             {/* Session stats */}
             <div className="mt-12 bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-amber-200">
@@ -601,8 +597,8 @@ export default function FocusZonePage() {
 
         {/* Confirmation modal */}
         {showConfirmModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-8 shadow-2xl border border-amber-200 max-w-md mx-4">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl p-8 shadow-2xl border border-amber-200 max-w-lg w-full mx-4">
               <div className="text-center mb-6">
                 <h3 className="text-2xl font-bold text-amber-900 mb-3">
                   Complete this session?
@@ -614,21 +610,25 @@ export default function FocusZonePage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <button
+                <Button
+                  variant="default"
+                  size="md"
                   onClick={confirmGoToDashboard}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="shadow-lg hover:shadow-xl flex-1 sm:flex-initial min-w-0"
                 >
                   <Home size={18} />
                   Go to Dashboard
-                </button>
+                </Button>
 
-                <button
+                <Button
+                  variant="secondary"
+                  size="md"
                   onClick={cancelGoToDashboard}
-                  className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200"
+                  className="bg-gray-500 hover:bg-gray-600 text-white border-gray-500 hover:border-gray-600 shadow-lg hover:shadow-xl flex-1 sm:flex-initial min-w-0"
                 >
                   <Play size={18} />
                   Continue Session
-                </button>
+                </Button>
               </div>
             </div>
           </div>
