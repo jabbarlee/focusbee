@@ -489,7 +489,7 @@ export default function FocusZonePage() {
                 </svg>
 
                 {/* Central content - Time display and button centered together */}
-                <div className="absolute inset-0 flex items-center justify-center">
+                <div className="absolute inset-0 flex items-center justify-center mt-8">
                   <div className="flex flex-col items-center">
                     {/* Time display */}
                     <div className="text-7xl font-bold text-amber-900 tracking-tight text-center">
