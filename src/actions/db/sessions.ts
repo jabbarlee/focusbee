@@ -240,10 +240,19 @@ export async function completeSession(
   sessionId: string,
   endTime?: string
 ): Promise<DatabaseResult<Session>> {
-  return updateSession(sessionId, {
+  console.log("=== completeSession Debug ===");
+  console.log("Completing session:", sessionId);
+  console.log("End time:", endTime || "current time");
+
+  const result = await updateSession(sessionId, {
     status: "completed",
     end_time: endTime || new Date().toISOString(),
   });
+
+  console.log("Complete session result:", result);
+  console.log("=== End completeSession Debug ===");
+
+  return result;
 }
 
 /**
@@ -316,6 +325,9 @@ export async function getUserStats(uid: string): Promise<
   }>
 > {
   try {
+    console.log("=== getUserStats Debug ===");
+    console.log("Fetching stats for UID:", uid);
+
     // Get all sessions
     const { data: sessions, error } = await supabase
       .from("sessions")
@@ -330,10 +342,15 @@ export async function getUserStats(uid: string): Promise<
       };
     }
 
+    console.log("Total sessions found:", sessions.length);
+    console.log("Sessions data:", sessions);
+
     const totalSessions = sessions.length;
     const completedSessions = sessions.filter(
       (s) => s.status === "completed"
     ).length;
+
+    console.log("Completed sessions count:", completedSessions);
 
     // Calculate total focus time (only for completed sessions)
     let totalFocusTime = 0;
@@ -343,7 +360,15 @@ export async function getUserStats(uid: string): Promise<
       "deep-nectar": 0,
     };
 
-    sessions.forEach((session) => {
+    sessions.forEach((session, index) => {
+      console.log(`Session ${index + 1}:`, {
+        id: session.id,
+        status: session.status,
+        start_time: session.start_time,
+        end_time: session.end_time,
+        focus_mode: session.focus_mode,
+      });
+
       if (
         session.status === "completed" &&
         session.start_time &&
@@ -354,7 +379,12 @@ export async function getUserStats(uid: string): Promise<
         const duration = Math.round(
           (endTime.getTime() - startTime.getTime()) / (1000 * 60)
         );
+        console.log(`Session ${session.id} duration: ${duration} minutes`);
         totalFocusTime += duration;
+      } else {
+        console.log(
+          `Session ${session.id} skipped - not completed or missing times`
+        );
       }
 
       // Count focus modes
@@ -362,6 +392,8 @@ export async function getUserStats(uid: string): Promise<
         modeCount[session.focus_mode as FocusMode]++;
       }
     });
+
+    console.log("Total focus time calculated:", totalFocusTime, "minutes");
 
     // Find favorite mode
     let favoriteMode: FocusMode | null = null;
@@ -393,6 +425,15 @@ export async function getUserStats(uid: string): Promise<
         break;
       }
     }
+
+    console.log("Final stats:", {
+      totalSessions,
+      completedSessions,
+      totalFocusTime,
+      streakDays,
+      favoriteMode,
+    });
+    console.log("=== End getUserStats Debug ===");
 
     return {
       success: true,
