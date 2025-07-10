@@ -21,3 +21,5 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE TYPE focus_mode AS ENUM ('quick-buzz', 'honey-flow', 'deep-nectar');
 
 CREATE TYPE session_status AS ENUM ('active', 'completed', 'cancelled');
+
+-- SAMPLE DATA TO PUSH
