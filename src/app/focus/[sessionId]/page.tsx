@@ -49,6 +49,8 @@ export default function FocusZonePage() {
   const [breakTimeRemaining, setBreakTimeRemaining] = useState(0);
   const [isBreakRunning, setIsBreakRunning] = useState(false);
   const [totalBreakTime, setTotalBreakTime] = useState(0);
+  const [breakCount, setBreakCount] = useState(0);
+  const maxBreaks = 2;
   const { playSuccess, playNotification, playBuzz } = useSounds();
   const { user, loading, isAuthenticated } = useAuth();
 
@@ -74,6 +76,26 @@ export default function FocusZonePage() {
         if (result.success && result.data) {
           const session = result.data;
           setSessionData(session);
+
+          // Check if session is already completed
+          if (session.status === "completed") {
+            // Still need to set selectedTimer for the completed UI
+            const timer = timerOptions.find((t) => t.id === session.focus_mode);
+            if (timer) {
+              setSelectedTimer(timer);
+            } else {
+              // Use default timer if not found
+              const defaultTimer = timerOptions.find(
+                (t) => t.id === "honey-flow"
+              );
+              if (defaultTimer) {
+                setSelectedTimer(defaultTimer);
+              }
+            }
+            setIsCompleted(true);
+            setIsLoadingSession(false);
+            return;
+          }
 
           // Find the corresponding timer from focus modes
           const timer = timerOptions.find((t) => t.id === session.focus_mode);
@@ -194,14 +216,15 @@ export default function FocusZonePage() {
   };
 
   const handleBreak = () => {
-    if (!isOnBreak) {
+    if (!isOnBreak && breakCount < maxBreaks) {
       // Start break
       setIsOnBreak(true);
       setBreakTimeRemaining(5 * 60); // 5 minutes break
       setIsBreakRunning(true);
       setIsPaused(true); // Pause main timer
+      setBreakCount((prev) => prev + 1); // Increment break count
       playNotification();
-    } else {
+    } else if (isOnBreak) {
       // Finish break early - calculate actual time spent on break
       const timeSpentOnBreak = 5 * 60 - breakTimeRemaining;
       setTotalBreakTime((prev) => prev + timeSpentOnBreak);
@@ -349,6 +372,9 @@ export default function FocusZonePage() {
   }
 
   if (isCompleted) {
+    // Check if this was a session that was already completed vs just completed now
+    const wasAlreadyCompleted = sessionData?.status === "completed";
+
     return (
       <div className="min-h-screen bg-bee-soft relative overflow-hidden">
         {/* Background honeycomb pattern */}
@@ -365,63 +391,76 @@ export default function FocusZonePage() {
 
         <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8">
           <div className="text-center max-w-lg">
-            <div className="w-32 h-32 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl">
+            <div
+              className={`w-32 h-32 ${
+                wasAlreadyCompleted ? "bg-amber-500" : "bg-green-500"
+              } rounded-full flex items-center justify-center mx-auto mb-8 shadow-2xl`}
+            >
               <CheckCircle size={64} className="text-white" />
             </div>
 
             <h1 className="text-5xl font-bold text-amber-900 mb-4">
-              Focus Complete! 🎉
+              {wasAlreadyCompleted
+                ? "Session Already Complete! ✨"
+                : "Focus Complete! 🎉"}
             </h1>
 
             <p className="text-xl text-amber-800 mb-8 leading-relaxed">
-              Congratulations! You've completed your {selectedTimer.name}{" "}
-              session. Time to celebrate your focused work!
+              {wasAlreadyCompleted
+                ? "This focus session has already been completed. Great work on staying consistent with your focus journey!"
+                : `Congratulations! You've completed your ${selectedTimer?.name} session. Time to celebrate your focused work!`}
             </p>
 
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-amber-200 mb-8">
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <div
-                  className={`w-12 h-12 bg-gradient-to-r ${selectedTimer.color} rounded-full flex items-center justify-center`}
-                >
-                  <selectedTimer.icon size={24} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-amber-900">
-                    {selectedTimer.name}
-                  </h3>
-                  <p className="text-amber-700">
-                    {selectedTimer.duration} minutes completed
-                  </p>
+            {selectedTimer && (
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-amber-200 mb-8">
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <div
+                    className={`w-10 h-10 bg-gradient-to-r ${selectedTimer.color} rounded-full flex items-center justify-center`}
+                  >
+                    <selectedTimer.icon size={20} className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-amber-900">
+                      {selectedTimer.name}
+                    </h3>
+                    <p className="text-amber-700 text-sm">
+                      {selectedTimer.duration} minutes{" "}
+                      {wasAlreadyCompleted ? "session" : "completed"}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                variant="default"
-                size="lg"
-                onClick={handleReset}
-                className="flex-1"
-              >
-                Start Another Session
-              </Button>
+            <div className="flex flex-col items-center gap-4">
+              {!wasAlreadyCompleted && (
+                <Button
+                  variant="default"
+                  size="md"
+                  onClick={handleReset}
+                  className="min-w-48"
+                >
+                  Start Another Session
+                </Button>
+              )}
 
               <Button
                 variant="secondary"
-                size="lg"
-                onClick={handleBackToSession}
-                className="bg-amber-100 hover:bg-amber-200 text-amber-800"
+                size="md"
+                onClick={() => router.push("/dashboard")}
+                className="bg-amber-100 hover:bg-amber-200 text-amber-800 min-w-48"
               >
                 <ArrowLeft size={20} />
-                Back to Session
+                Back to Dashboard
               </Button>
 
-              {/* Conditional dashboard button for authenticated users */}
-              {!loading && isAuthenticated && (
+              {/* Conditional dashboard button for authenticated users - only show if not already completed */}
+              {!loading && isAuthenticated && !wasAlreadyCompleted && (
                 <Button
                   variant="warning"
-                  size="sm"
+                  size="md"
                   onClick={confirmGoToDashboard}
+                  className="min-w-48"
                 >
                   <Home
                     size={16}
@@ -696,7 +735,17 @@ export default function FocusZonePage() {
                   <span className="text-sm">Cancel</span>
                 </Button>
 
-                <Button variant="warning" size="sm" onClick={handleBreak}>
+                <Button
+                  variant="warning"
+                  size="sm"
+                  onClick={handleBreak}
+                  disabled={!isOnBreak && breakCount >= maxBreaks}
+                  className={`${
+                    !isOnBreak && breakCount >= maxBreaks
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
                   <Coffee
                     size={16}
                     className="transition-transform group-hover:scale-110"
@@ -704,6 +753,11 @@ export default function FocusZonePage() {
                   <span className="text-sm">
                     {isOnBreak ? "Finish Break" : "Break"}
                   </span>
+                  {!isOnBreak && (
+                    <span className="ml-2 px-2 py-1 bg-white/20 rounded-full text-xs font-medium">
+                      {maxBreaks - breakCount}
+                    </span>
+                  )}
                 </Button>
               </div>
             </div>
