@@ -48,6 +48,7 @@ export default function FocusZonePage() {
   const [isOnBreak, setIsOnBreak] = useState(false);
   const [breakTimeRemaining, setBreakTimeRemaining] = useState(0);
   const [isBreakRunning, setIsBreakRunning] = useState(false);
+  const [totalBreakTime, setTotalBreakTime] = useState(0);
   const { playSuccess, playNotification, playBuzz } = useSounds();
   const { user, loading, isAuthenticated } = useAuth();
 
@@ -146,8 +147,11 @@ export default function FocusZonePage() {
       interval = setInterval(() => {
         setBreakTimeRemaining((prev) => {
           if (prev <= 1) {
+            // Break completed naturally - add full 5 minutes to total
+            setTotalBreakTime((prevTotal) => prevTotal + 5 * 60);
             setIsBreakRunning(false);
             setIsOnBreak(false);
+            setIsPaused(false); // Resume main timer
             playNotification();
             return 0;
           }
@@ -198,7 +202,9 @@ export default function FocusZonePage() {
       setIsPaused(true); // Pause main timer
       playNotification();
     } else {
-      // Finish break
+      // Finish break early - calculate actual time spent on break
+      const timeSpentOnBreak = 5 * 60 - breakTimeRemaining;
+      setTotalBreakTime((prev) => prev + timeSpentOnBreak);
       setIsOnBreak(false);
       setIsBreakRunning(false);
       setBreakTimeRemaining(0);
@@ -703,7 +709,7 @@ export default function FocusZonePage() {
             </div>
             {/* Session stats */}
             <div className="mt-12 bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-amber-200">
-              <div className="grid grid-cols-3 gap-6 text-center">
+              <div className="grid grid-cols-4 gap-6 text-center">
                 <div>
                   <div className="text-2xl font-bold text-amber-900">
                     {Math.round(progress)}%
@@ -724,6 +730,12 @@ export default function FocusZonePage() {
                     {Math.floor(timeRemaining / 60)}m
                   </div>
                   <div className="text-sm text-amber-700">Remaining</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-emerald-700">
+                    {Math.floor(totalBreakTime / 60)}m
+                  </div>
+                  <div className="text-sm text-emerald-600">Break Time</div>
                 </div>
               </div>
             </div>
