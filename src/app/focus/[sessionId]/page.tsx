@@ -45,6 +45,9 @@ export default function FocusZonePage() {
   const [selectedTimer, setSelectedTimer] = useState<FocusMode | null>(null);
   const [sessionData, setSessionData] = useState<Session | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(true);
+  const [isOnBreak, setIsOnBreak] = useState(false);
+  const [breakTimeRemaining, setBreakTimeRemaining] = useState(0);
+  const [isBreakRunning, setIsBreakRunning] = useState(false);
   const { playSuccess, playNotification, playBuzz } = useSounds();
   const { user, loading, isAuthenticated } = useAuth();
 
@@ -114,7 +117,7 @@ export default function FocusZonePage() {
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
-    if (isRunning && !isPaused && timeRemaining > 0) {
+    if (isRunning && !isPaused && timeRemaining > 0 && !isOnBreak) {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
           if (prev <= 1) {
@@ -133,7 +136,28 @@ export default function FocusZonePage() {
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, isPaused, timeRemaining, playSuccess, sessionData]);
+  }, [isRunning, isPaused, timeRemaining, playSuccess, sessionData, isOnBreak]);
+
+  // Break timer countdown effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isBreakRunning && breakTimeRemaining > 0) {
+      interval = setInterval(() => {
+        setBreakTimeRemaining((prev) => {
+          if (prev <= 1) {
+            setIsBreakRunning(false);
+            setIsOnBreak(false);
+            playNotification();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [isBreakRunning, breakTimeRemaining, playNotification]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -149,12 +173,14 @@ export default function FocusZonePage() {
   };
 
   const handlePause = () => {
-    setIsPaused(!isPaused);
-    playNotification();
+    if (!isOnBreak) {
+      setIsPaused(!isPaused);
+      playNotification();
+    }
   };
 
   const handleReset = () => {
-    if (selectedTimer) {
+    if (selectedTimer && !isOnBreak) {
       setTimeRemaining(selectedTimer.duration * 60);
       setIsRunning(true);
       setIsPaused(false);
@@ -164,9 +190,21 @@ export default function FocusZonePage() {
   };
 
   const handleBreak = () => {
-    setIsPaused(true);
-    playNotification();
-    // You could add a break timer here
+    if (!isOnBreak) {
+      // Start break
+      setIsOnBreak(true);
+      setBreakTimeRemaining(5 * 60); // 5 minutes break
+      setIsBreakRunning(true);
+      setIsPaused(true); // Pause main timer
+      playNotification();
+    } else {
+      // Finish break
+      setIsOnBreak(false);
+      setIsBreakRunning(false);
+      setBreakTimeRemaining(0);
+      setIsPaused(false); // Resume main timer
+      playNotification();
+    }
   };
 
   const handleBackToSession = () => {
@@ -474,86 +512,156 @@ export default function FocusZonePage() {
                   {selectedTimer.description}
                 </p>
               </div>
-            </div>{" "}
-            {/* Simple Circle Timer */}
+            </div>
+
+            {/* Main and Break Timers Container */}
             <div className="relative flex items-center justify-center mb-8">
-              {/* Main circular timer container */}
-              <div className="relative w-96 h-96 rounded-full bg-white shadow-lg border-2 border-amber-200">
-                {/* Simple circular progress ring */}
-                <svg
-                  className="absolute inset-4 w-88 h-88 transform -rotate-90"
-                  viewBox="0 0 100 100"
-                >
-                  {/* Background track */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="46"
-                    fill="none"
-                    stroke="#f3f4f6"
-                    strokeWidth="4"
-                  />
+              {/* Main Timer */}
+              <div
+                className={`transition-all duration-500 ${
+                  isOnBreak
+                    ? "opacity-60 scale-95 transform -translate-x-16"
+                    : "opacity-100 scale-100 transform translate-x-0"
+                }`}
+              >
+                <div className="relative w-96 h-96 rounded-full bg-white shadow-lg border-2 border-amber-200">
+                  {/* Simple circular progress ring */}
+                  <svg
+                    className="absolute inset-4 w-88 h-88 transform -rotate-90"
+                    viewBox="0 0 100 100"
+                  >
+                    {/* Background track */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="46"
+                      fill="none"
+                      stroke="#f3f4f6"
+                      strokeWidth="4"
+                    />
 
-                  {/* Progress track */}
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="46"
-                    fill="none"
-                    stroke="#f59e0b"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    strokeDasharray={`${progress * 2.89} ${
-                      (100 - progress) * 2.89
-                    }`}
-                    className="transition-all duration-1000 ease-out"
-                  />
-                </svg>
+                    {/* Progress track */}
+                    <circle
+                      cx="50"
+                      cy="50"
+                      r="46"
+                      fill="none"
+                      stroke="#f59e0b"
+                      strokeWidth="4"
+                      strokeLinecap="round"
+                      strokeDasharray={`${progress * 2.89} ${
+                        (100 - progress) * 2.89
+                      }`}
+                      className="transition-all duration-1000 ease-out"
+                    />
+                  </svg>
 
-                {/* Central content - Time display and button centered together */}
-                <div className="absolute inset-0 flex items-center justify-center mt-8">
-                  <div className="flex flex-col items-center">
-                    {/* Time display */}
-                    <div className="text-7xl font-bold text-amber-900 tracking-tight text-center">
-                      {formatTime(timeRemaining)}
-                    </div>
+                  {/* Central content - Time display and button centered together */}
+                  <div className="absolute inset-0 flex items-center justify-center mt-8">
+                    <div className="flex flex-col items-center">
+                      {/* Time display */}
+                      <div className="text-7xl font-bold text-amber-900 tracking-tight text-center">
+                        {formatTime(timeRemaining)}
+                      </div>
 
-                    {/* Pause/Resume and Reset buttons */}
-                    <div className="mt-4 flex gap-3">
-                      <button
-                        onClick={handlePause}
-                        className={`group flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white border transition-all duration-200 shadow-sm hover:shadow-md font-semibold rounded-xl ${
-                          isPaused
-                            ? "border-green-200 hover:border-green-300 text-green-700 hover:text-green-800"
-                            : "border-amber-200 hover:border-amber-300 text-amber-700 hover:text-amber-800"
-                        }`}
-                      >
-                        {isPaused ? (
-                          <Play
+                      {/* Pause/Resume and Reset buttons */}
+                      <div className="mt-4 flex gap-3">
+                        <button
+                          onClick={handlePause}
+                          disabled={isOnBreak}
+                          className={`group flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white border transition-all duration-200 shadow-sm hover:shadow-md font-semibold rounded-xl ${
+                            isOnBreak
+                              ? "border-gray-200 text-gray-400 cursor-not-allowed"
+                              : isPaused
+                              ? "border-green-200 hover:border-green-300 text-green-700 hover:text-green-800"
+                              : "border-amber-200 hover:border-amber-300 text-amber-700 hover:text-amber-800"
+                          }`}
+                        >
+                          {isPaused ? (
+                            <Play
+                              size={16}
+                              className="transition-transform group-hover:scale-110"
+                            />
+                          ) : (
+                            <Pause
+                              size={16}
+                              className="transition-transform group-hover:scale-110"
+                            />
+                          )}
+                        </button>
+
+                        <button
+                          onClick={handleReset}
+                          disabled={isOnBreak}
+                          className={`group flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white border transition-all duration-200 shadow-sm hover:shadow-md font-semibold rounded-xl ${
+                            isOnBreak
+                              ? "border-gray-200 text-gray-400 cursor-not-allowed"
+                              : "border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-800"
+                          }`}
+                        >
+                          <RotateCcw
                             size={16}
-                            className="transition-transform group-hover:scale-110"
+                            className="transition-transform group-hover:rotate-180"
                           />
-                        ) : (
-                          <Pause
-                            size={16}
-                            className="transition-transform group-hover:scale-110"
-                          />
-                        )}
-                      </button>
-
-                      <button
-                        onClick={handleReset}
-                        className="group flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white border border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-800 font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md"
-                      >
-                        <RotateCcw
-                          size={16}
-                          className="transition-transform group-hover:rotate-180"
-                        />
-                      </button>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
+
+              {/* Break Timer */}
+              {isOnBreak && (
+                <div className="animate-fade-in-scale ml-8">
+                  <div className="relative w-80 h-80 rounded-full bg-white shadow-lg border-2 border-emerald-200">
+                    {/* Break timer progress ring */}
+                    <svg
+                      className="absolute inset-4 w-72 h-72 transform -rotate-90"
+                      viewBox="0 0 100 100"
+                    >
+                      {/* Background track */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="46"
+                        fill="none"
+                        stroke="#f3f4f6"
+                        strokeWidth="4"
+                      />
+
+                      {/* Progress track */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="46"
+                        fill="none"
+                        stroke="#10b981"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeDasharray={`${
+                          ((5 * 60 - breakTimeRemaining) / (5 * 60)) * 289
+                        } ${(breakTimeRemaining / (5 * 60)) * 289}`}
+                        className="transition-all duration-1000 ease-out"
+                      />
+                    </svg>
+
+                    {/* Break timer central content */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex flex-col items-center">
+                        {/* Break label */}
+                        <div className="text-lg font-semibold text-emerald-700 mb-2">
+                          Break Time
+                        </div>
+
+                        {/* Break time display */}
+                        <div className="text-5xl font-bold text-emerald-900 tracking-tight text-center">
+                          {formatTime(breakTimeRemaining)}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             {/* Refined control buttons */}
             <div className="w-full flex justify-center mb-8">
@@ -587,7 +695,9 @@ export default function FocusZonePage() {
                     size={16}
                     className="transition-transform group-hover:scale-110"
                   />
-                  <span className="text-sm">Break</span>
+                  <span className="text-sm">
+                    {isOnBreak ? "Finish Break" : "Break"}
+                  </span>
                 </Button>
               </div>
             </div>
