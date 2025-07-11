@@ -72,7 +72,7 @@ export default function DashboardPage() {
       setSessionId(tempSessionId);
 
       // Generate QR code with the temporary session ID
-      const baseUrl = "http://10.0.1.94:3000";
+      const baseUrl = "http://192.168.88.220:3000";
       const qrUrl = `${baseUrl}/session/${tempSessionId}`;
       setQrValue(qrUrl);
 

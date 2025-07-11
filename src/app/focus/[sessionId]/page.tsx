@@ -236,10 +236,6 @@ export default function FocusZonePage() {
     }
   };
 
-  const handleBackToSession = () => {
-    router.push(`/session/${sessionId}`);
-  };
-
   const handleJoinHive = () => {
     router.push("/signup");
   };
@@ -440,7 +436,8 @@ export default function FocusZonePage() {
                   onClick={handleReset}
                   className="min-w-48"
                 >
-                  Start Another Session
+                  <RotateCcw size={20} />
+                  Restart Timer
                 </Button>
               )}
 
@@ -499,22 +496,19 @@ export default function FocusZonePage() {
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
         <header className="flex items-center p-6 relative">
+          {/* Left side - FocusBee logo and session info */}
           <div className="flex-1">
-            <Button variant="outline" size="md" onClick={handleBackToSession}>
-              <ArrowLeft size={20} />
-              Back to Session
-            </Button>
+            <div className="text-left">
+              <h1 className="text-2xl font-bold text-amber-900">
+                Focus<span className="text-amber-600">Bee</span>
+              </h1>
+              <p className="text-sm text-amber-700">
+                Session: {sessionId?.slice(-8)}
+              </p>
+            </div>
           </div>
 
-          <div className="text-center absolute left-1/2 transform -translate-x-1/2">
-            <h1 className="text-2xl font-bold text-amber-900">
-              Focus<span className="text-amber-600">Bee</span>
-            </h1>
-            <p className="text-sm text-amber-700">
-              Session: {sessionId?.slice(-8)}
-            </p>
-          </div>
-
+          {/* Right side - Navigation */}
           <div className="flex-1 flex justify-end">
             {/* Conditional navigation */}
             {!loading && (
@@ -800,9 +794,12 @@ export default function FocusZonePage() {
 
         {/* Confirmation modal */}
         {showConfirmModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-8 shadow-2xl border border-amber-200 max-w-lg w-full mx-4">
+          <div className="fixed inset-0 bg-white/10 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-8 shadow-2xl border border-amber-200 max-w-lg w-full mx-4 transform animate-in fade-in-0 zoom-in-95 duration-300">
               <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Home size={32} className="text-white" />
+                </div>
                 <h3 className="text-2xl font-bold text-amber-900 mb-3">
                   Complete this session?
                 </h3>
