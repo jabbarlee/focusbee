@@ -1,37 +1,128 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FocusBee
 
-## Getting Started
+A modern focus and productivity application with real-time synchronization between web and mobile devices.
 
-First, run the development server:
+## Architecture
+
+FocusBee consists of two main components:
+
+- **Next.js Frontend** - Web interface deployed on Vercel
+- **WebSocket Server** - Real-time communication server deployed on Render
+
+## Features
+
+- 🎯 Focus sessions with customizable timers
+- 📱 Mobile and web synchronization
+- 🔄 Real-time updates between devices
+- 🎵 Ambient sounds and notifications
+- 📊 Session tracking and analytics
+- 🔗 QR code session sharing
+
+## Quick Start
+
+### Local Development
+
+1. **Clone the repository**
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd focusbee
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Install dependencies**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **Set up environment variables**
 
-## Learn More
+```bash
+cp .env.example .env.local
+# Edit .env.local with your configuration
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. **Start the WebSocket server**
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+cd websocket-server
+npm install
+cp .env.example .env
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. **Start the frontend** (in a new terminal)
 
-## Deploy on Vercel
+```bash
+# In the main project directory
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+6. **Open the application**
+   - Web: [http://localhost:3000](http://localhost:3000)
+   - WebSocket Health: [http://localhost:3001/health](http://localhost:3001/health)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# focusbee
+## Deployment
+
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
+
+### Quick Deployment Summary
+
+1. **WebSocket Server** → Deploy `websocket-server/` to Render
+2. **Frontend** → Deploy main project to Vercel
+3. **Configure** environment variables in both services
+
+## Project Structure
+
+```
+focusbee/
+├── src/                    # Next.js application
+│   ├── app/               # App router pages
+│   ├── components/        # React components
+│   ├── hooks/            # Custom hooks
+│   └── lib/              # Utilities and configuration
+├── websocket-server/      # Standalone WebSocket server
+│   ├── server.js         # WebSocket server implementation
+│   ├── package.json      # Server dependencies
+│   └── README.md         # Server documentation
+└── public/               # Static assets
+```
+
+## Technology Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
+- **WebSocket**: Socket.IO, Node.js
+- **Database**: Supabase
+- **Authentication**: Firebase Auth
+- **Deployment**: Vercel (frontend) + Render (WebSocket)
+
+## Environment Variables
+
+### Frontend (.env.local)
+
+```
+NEXT_PUBLIC_WEBSOCKET_URL=http://localhost:3001
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+### WebSocket Server (.env)
+
+```
+PORT=3001
+HOST=0.0.0.0
+NODE_ENV=development
+ALLOWED_ORIGINS=http://localhost:3000
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test locally
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

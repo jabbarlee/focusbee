@@ -74,13 +74,12 @@ export function useWebSocket({
       clearTimeout(reconnectTimeoutRef.current);
     }
 
-    // Get the current hostname to determine if we're on localhost or network
-    const hostname =
-      typeof window !== "undefined" ? window.location.hostname : "localhost";
+    // Get WebSocket URL from environment or use default
     const wsUrl =
-      hostname === "localhost"
+      process.env.NEXT_PUBLIC_WEBSOCKET_URL ||
+      (typeof window !== "undefined" && window.location.hostname === "localhost"
         ? "http://localhost:3001"
-        : `http://${hostname}:3001`;
+        : process.env.NEXT_PUBLIC_WEBSOCKET_URL || "http://localhost:3001");
 
     console.log("Connecting to WebSocket at:", wsUrl);
 
