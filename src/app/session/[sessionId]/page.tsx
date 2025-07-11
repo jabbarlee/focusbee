@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { focusModes, ritualSteps } from "@/lib/data";
+import { focusModes, ritualSteps, FocusMode } from "@/lib/data";
 import { Button } from "@/components/ui";
+import { getSessionById } from "@/actions/db/sessions";
+import { Session } from "@/types/dbSchema";
 import {
   ArrowLeft,
   CheckCircle,
@@ -13,6 +15,7 @@ import {
   Timer,
   Target,
   Zap,
+  Home,
 } from "lucide-react";
 
 export default function SessionPage() {
@@ -26,6 +29,11 @@ export default function SessionPage() {
   const [timerStartTime, setTimerStartTime] = useState<Date | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [isCountdownActive, setIsCountdownActive] = useState(false);
+  const [sessionData, setSessionData] = useState<Session | null>(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
+  const [sessionStatus, setSessionStatus] = useState<
+    "loading" | "active" | "completed" | "not-found"
+  >("loading");
   const { playBuzz, playSuccess, playStepComplete, playQRScan } = useSounds();
 
   // WebSocket connection for real-time communication with laptop
@@ -38,6 +46,46 @@ export default function SessionPage() {
   } = useWebSocket({
     sessionId,
   });
+
+  // Check session status from database
+  useEffect(() => {
+    const fetchSessionData = async () => {
+      if (!sessionId) return;
+
+      // Check if this is a temporary session ID (not from database)
+      if (sessionId.startsWith("temp_")) {
+        setSessionStatus("active");
+        setIsLoadingSession(false);
+        return;
+      }
+
+      setIsLoadingSession(true);
+      try {
+        const result = await getSessionById(sessionId);
+
+        if (result.success && result.data) {
+          const session = result.data;
+          setSessionData(session);
+
+          if (session.status === "completed") {
+            setSessionStatus("completed");
+          } else {
+            setSessionStatus("active");
+          }
+        } else {
+          console.error("Session not found:", result.error);
+          setSessionStatus("not-found");
+        }
+      } catch (error) {
+        console.error("Error fetching session:", error);
+        setSessionStatus("not-found");
+      } finally {
+        setIsLoadingSession(false);
+      }
+    };
+
+    fetchSessionData();
+  }, [sessionId]);
 
   // Play welcome sound when session page loads (QR scanned)
   useEffect(() => {
@@ -156,9 +204,146 @@ export default function SessionPage() {
       ); // Debug log
       emitTimerSelected(selectedTimer!, selectedTimerData.name);
     } else {
-      console.error("Could not find timer data for:", selectedTimer); // Debug log
     }
   };
+
+  // Loading state
+  if (isLoadingSession) {
+    return (
+      <div className="min-h-screen bg-bee-soft flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-amber-800">Loading session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Session not found
+  if (sessionStatus === "not-found") {
+    return (
+      <div className="min-h-screen bg-bee-soft relative overflow-hidden">
+        {/* Background honeycomb pattern */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="grid grid-cols-6 gap-3 p-4 transform rotate-12 scale-150">
+            {Array.from({ length: 36 }).map((_, i) => (
+              <div
+                key={i}
+                className="w-6 h-6 border-2 border-amber-400/40 transform rotate-45"
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 py-8">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <Target size={36} className="text-white" />
+            </div>
+
+            <h1 className="text-4xl font-bold text-amber-900 mb-4">
+              Session Not Found
+            </h1>
+
+            <p className="text-lg text-amber-800 mb-8 leading-relaxed">
+              This session doesn't exist or has been removed.
+            </p>
+
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => router.push("/dashboard")}
+              className="bg-amber-100 hover:bg-amber-200 text-amber-800"
+            >
+              <Home size={20} />
+              Go to Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Session completed
+  if (sessionStatus === "completed" && sessionData) {
+    const selectedTimerData = focusModes.find(
+      (t) => t.id === sessionData.focus_mode
+    );
+
+    return (
+      <div className="min-h-screen bg-bee-soft relative overflow-hidden">
+        {/* Background honeycomb pattern */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="grid grid-cols-6 gap-3 p-4 transform rotate-12 scale-150">
+            {Array.from({ length: 36 }).map((_, i) => (
+              <div
+                key={i}
+                className="w-6 h-6 border-2 border-amber-400/40 transform rotate-45"
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 py-8">
+          <div className="text-center max-w-md">
+            <div className="w-20 h-20 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <CheckCircle size={36} className="text-white" />
+            </div>
+
+            <h1 className="text-4xl font-bold text-amber-900 mb-4">
+              Session Complete! ✨
+            </h1>
+
+            <p className="text-lg text-amber-800 mb-6 leading-relaxed">
+              This focus session has already been completed. Great work on your
+              focus journey!
+            </p>
+
+            {selectedTimerData && (
+              <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-xl border border-amber-200 mb-8">
+                <div className="flex items-center justify-center gap-3">
+                  <div
+                    className={`w-8 h-8 bg-gradient-to-r ${selectedTimerData.color} rounded-full flex items-center justify-center`}
+                  >
+                    <selectedTimerData.icon size={16} className="text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-amber-900">
+                      {selectedTimerData.name}
+                    </h3>
+                    <p className="text-amber-700 text-sm">
+                      {selectedTimerData.duration} minutes session
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-col gap-4">
+              <Button
+                variant="default"
+                size="md"
+                onClick={() => router.push("/focus/" + sessionId)}
+                className="min-w-48"
+              >
+                View Session Details
+              </Button>
+
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => router.push("/dashboard")}
+                className="bg-amber-100 hover:bg-amber-200 text-amber-800 min-w-48"
+              >
+                <Home size={20} />
+                Back to Dashboard
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Timer selection screen
   if (!timerConfirmed) {
