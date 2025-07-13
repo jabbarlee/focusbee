@@ -1,9 +1,9 @@
 "use client";
 
-import { FocusWrapper } from "@/components/pages/focus";
 import { useParams } from "next/navigation";
+import { FocusWrapper } from "./FocusWrapper";
 
-export default function FocusZonePage() {
+export default function FocusPage() {
   const params = useParams();
   const sessionId = params.sessionId as string;
 
