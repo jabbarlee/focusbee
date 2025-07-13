@@ -17,6 +17,22 @@ CREATE TABLE IF NOT EXISTS sessions (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS user_stats (
+  uid TEXT PRIMARY KEY REFERENCES users(uid) ON DELETE CASCADE,
+  
+  total_focus_minutes INTEGER DEFAULT 0,
+  total_sessions INTEGER DEFAULT 0,
+  completed_sessions INTEGER DEFAULT 0,
+  cancelled_sessions INTEGER DEFAULT 0,
+
+  last_session_at TIMESTAMPTZ,
+  longest_session_minutes INTEGER DEFAULT 0,
+  average_session_minutes INTEGER DEFAULT 0,
+
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
 -- ENUMS
 CREATE TYPE focus_mode AS ENUM ('quick-buzz', 'honey-flow', 'deep-nectar');
 
