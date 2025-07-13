@@ -193,6 +193,84 @@ if (result.success && result.data) {
 - `getActiveSession(uid)` - Get user's active session
 - `getUserStats(uid)` - Calculate user statistics
 
+### User Stats Table
+
+```sql
+CREATE TABLE user_stats (
+  uid TEXT PRIMARY KEY REFERENCES users(uid) ON DELETE CASCADE,
+
+  total_focus_minutes INTEGER DEFAULT 0,
+  total_sessions INTEGER DEFAULT 0,
+  completed_sessions INTEGER DEFAULT 0,
+  cancelled_sessions INTEGER DEFAULT 0,
+
+  last_session_at TIMESTAMPTZ,
+  longest_session_minutes INTEGER DEFAULT 0,
+  average_session_minutes INTEGER DEFAULT 0,
+
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+**Features:**
+
+- Automatically tracks user focus statistics
+- Updates when sessions are created, completed, or cancelled
+- Provides aggregated data for dashboards and analytics
+
+**User Stats Functions:**
+
+- `createUserStats(uid)` - Create initial stats record
+- `getUserStatsRecord(uid)` - Get user stats record
+- `updateStatsOnSessionCreate(uid)` - Update stats when session created
+- `updateStatsOnSessionComplete(session)` - Update stats when session completed
+- `updateStatsOnSessionCancel(uid)` - Update stats when session cancelled
+- `recalculateUserStats(uid)` - Recalculate stats from scratch
+
+**Migration Functions:**
+
+- `initializeAllUserStats()` - Initialize stats for existing users
+- `recalculateAllUserStats()` - Recalculate stats for all users
+
+## User Stats System
+
+The user stats system automatically tracks user engagement and focus metrics. It integrates seamlessly with session management:
+
+### Automatic Updates
+
+When sessions are created, completed, or cancelled, the stats are automatically updated:
+
+- **Session Created**: Increments `total_sessions`
+- **Session Completed**: Updates `completed_sessions`, `total_focus_minutes`, `longest_session_minutes`, `average_session_minutes`, and `last_session_at`
+- **Session Cancelled**: Increments `cancelled_sessions`
+
+### Implementation Options
+
+**1. Application-Level Updates (Current Implementation)**
+
+- Stats updates happen in the application code
+- Provides full control and error handling
+- Requires consistent use across all session operations
+
+**2. Database-Level Triggers (Optional)**
+
+- Use the provided SQL triggers for automatic updates
+- More reliable but less flexible
+- Execute `/src/lib/db/user_stats_triggers.sql` to enable
+
+### Migration for Existing Users
+
+For existing applications, use the migration functions to initialize stats:
+
+```bash
+# Initialize stats for users without records
+node scripts/migrate-user-stats.js init
+
+# Recalculate stats for all users (fix inconsistencies)
+node scripts/migrate-user-stats.js recalculate
+```
+
 ## Best Practices
 
 1. **Always handle errors** - Database operations can fail

@@ -3,6 +3,11 @@
 import { supabase } from "@/lib/config/supabase";
 import { Session, FocusMode, SessionStatus } from "@/types/dbSchema";
 import { DatabaseResult } from "./users";
+import {
+  updateStatsOnSessionCreate,
+  updateStatsOnSessionComplete,
+  updateStatsOnSessionCancel,
+} from "./userStats";
 
 export interface CreateSessionData {
   uid: string;
@@ -57,6 +62,9 @@ export async function createSession(
     }
 
     console.log("Session created successfully:", data); // Debug log
+
+    // Update user statistics
+    await updateStatsOnSessionCreate(data.uid);
 
     return {
       success: true,
@@ -218,6 +226,13 @@ export async function updateSession(
         success: false,
         error: error.message,
       };
+    }
+
+    // Update user statistics based on status change
+    if (updates.status === "completed") {
+      await updateStatsOnSessionComplete(data as Session);
+    } else if (updates.status === "cancelled") {
+      await updateStatsOnSessionCancel(data.uid);
     }
 
     return {

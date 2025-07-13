@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/config/supabase";
 import { User } from "@/types/dbSchema";
+import { createUserStats } from "./userStats";
 
 export interface CreateUserData {
   uid: string;
@@ -47,6 +48,9 @@ export async function createUser(
         error: error.message,
       };
     }
+
+    // Create initial user stats
+    await createUserStats(data.uid);
 
     return {
       success: true,
