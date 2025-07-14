@@ -66,15 +66,11 @@ export function RitualStep({
             </div>
 
             <h1 className="text-3xl font-bold text-amber-900 mb-2">
-              {currentStep === 1 && countdown === 0
-                ? "Perfect! You've walked away"
-                : step.title}
+              {step.title}
             </h1>
 
             <p className="text-lg text-amber-700 mb-6 font-medium">
-              {currentStep === 1 && countdown === 0
-                ? "Great job creating that distance!"
-                : step.subtitle}
+              {step.subtitle}
             </p>
 
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-amber-200 mb-8">
@@ -104,19 +100,15 @@ export function RitualStep({
             <Button
               onClick={onStepComplete}
               disabled={
-                currentStep === 1 && (isCountdownActive || countdown === null)
+                currentStep === 1 && (isCountdownActive || countdown !== 0)
               }
               className={`w-full py-4 px-8 text-lg shadow-lg ${
-                currentStep === 1 && (isCountdownActive || countdown === null)
+                currentStep === 1 && (isCountdownActive || countdown !== 0)
                   ? "opacity-50 cursor-not-allowed"
                   : "hover:scale-105"
               }`}
             >
-              {currentStep === 1 && isCountdownActive
-                ? "Walk away first..."
-                : currentStep === 1 && countdown === 0
-                ? "I've walked away ✓"
-                : step.action}
+              {step.action}
             </Button>
 
             {/* Session info */}

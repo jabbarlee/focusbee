@@ -140,6 +140,18 @@ export function SessionWrapper({ sessionId }: SessionWrapperProps) {
       emitRitualStep("Step 1: Standing up", 1, steps.length);
 
       setCurrentStep((prev) => prev + 1);
+    } else if (currentStep === 1) {
+      // Second step: walk away step completion
+      playStepComplete();
+
+      // Reset countdown states when moving away from walk away step
+      setCountdown(null);
+      setIsCountdownActive(false);
+
+      // Emit current step progress via WebSocket
+      emitRitualStep("Step 2: Walking away", 2, steps.length);
+
+      setCurrentStep((prev) => prev + 1);
     } else if (currentStep < steps.length - 1) {
       playStepComplete();
 
