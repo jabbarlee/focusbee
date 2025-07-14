@@ -66,11 +66,15 @@ export function RitualStep({
             </div>
 
             <h1 className="text-3xl font-bold text-amber-900 mb-2">
-              {step.title}
+              {currentStep === 1 && countdown === 0
+                ? "Perfect! You've walked away"
+                : step.title}
             </h1>
 
             <p className="text-lg text-amber-700 mb-6 font-medium">
-              {step.subtitle}
+              {currentStep === 1 && countdown === 0
+                ? "Great job creating that distance!"
+                : step.subtitle}
             </p>
 
             <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-amber-200 mb-8">

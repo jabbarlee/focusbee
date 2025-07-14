@@ -94,16 +94,6 @@ export function CompletionScreen({
               </Button>
             )}
 
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={() => router.push("/dashboard")}
-              className="bg-amber-100 hover:bg-amber-200 text-amber-800 min-w-48"
-            >
-              <ArrowLeft size={20} />
-              Back to Dashboard
-            </Button>
-
             {/* Conditional dashboard button for authenticated users - only show if not already completed */}
             {!loading && isAuthenticated && !wasAlreadyCompleted && (
               <Button

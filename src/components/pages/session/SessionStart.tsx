@@ -88,21 +88,21 @@ export function SessionStart({
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col gap-3">
             <Button
-              onClick={onBackToTimerSelection}
-              variant="secondary"
-              className="flex items-center gap-2 px-4 py-3"
+              onClick={onStart}
+              className="w-full py-4 px-8 text-lg shadow-lg"
             >
-              <ArrowLeft size={20} />
-              Change Timer
+              Start Focus Ritual
             </Button>
 
             <Button
-              onClick={onStart}
-              className="flex-1 py-4 px-8 text-lg shadow-lg"
+              onClick={onBackToTimerSelection}
+              variant="secondary"
+              className="w-full flex items-center justify-center gap-2 px-4 py-3"
             >
-              Start Focus Ritual
+              <ArrowLeft size={20} />
+              Change Timer
             </Button>
           </div>
         </div>

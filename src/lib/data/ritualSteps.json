@@ -19,7 +19,7 @@
     {
       "title": "Perfect positioning!",
       "subtitle": "Time to create separation",
-      "instruction": "Place your phone face down in this location and leave it here",
+      "instruction": "Place your phone in this location and leave it here",
       "action": "Phone is placed",
       "icon": "Smartphone",
       "color": "text-orange-500"
@@ -28,7 +28,7 @@
       "title": "Ritual complete!",
       "subtitle": "Your focus zone is activated",
       "instruction": "Return to your workspace. Your phone will stay here as a gentle reminder of your commitment to focus.",
-      "action": "Start focusing",
+      "action": "Let's focus",
       "icon": "Target",
       "color": "text-purple-500"
     }
