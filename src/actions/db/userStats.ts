@@ -166,7 +166,7 @@ export async function updateStatsOnSessionComplete(
   session: Session
 ): Promise<DatabaseResult<UserStats>> {
   try {
-    const { uid, start_time, end_time } = session;
+    const { uid, actual_focus_minutes } = session;
 
     // Get current stats
     const statsResult = await getUserStatsRecord(uid);
@@ -180,7 +180,7 @@ export async function updateStatsOnSessionComplete(
     }
 
     const currentStats = statsResult.data;
-    const sessionDuration = calculateSessionDuration(start_time, end_time);
+    const sessionDuration = actual_focus_minutes || 0; // Use actual focus time, not elapsed time
 
     // Calculate new stats
     const newCompletedSessions = currentStats.completed_sessions + 1;
@@ -201,7 +201,7 @@ export async function updateStatsOnSessionComplete(
         total_focus_minutes: newTotalFocusMinutes,
         longest_session_minutes: newLongestSession,
         average_session_minutes: newAverageSessionMinutes,
-        last_session_at: end_time,
+        last_session_at: session.end_time,
         updated_at: new Date().toISOString(),
       })
       .eq("uid", uid)
@@ -325,17 +325,19 @@ export async function recalculateUserStats(
       (s) => s.status === "cancelled"
     );
 
-    // Calculate stats
+    // Calculate stats using actual focus time
     let totalFocusMinutes = 0;
     let longestSessionMinutes = 0;
     let lastSessionAt: string | null = null;
 
     completedSessions.forEach((session) => {
       if (session.end_time) {
-        const duration = calculateSessionDuration(
-          session.start_time,
-          session.end_time
-        );
+        // Use actual_focus_minutes if available, otherwise fallback to elapsed time
+        const duration =
+          session.actual_focus_minutes > 0
+            ? session.actual_focus_minutes
+            : calculateSessionDuration(session.start_time, session.end_time);
+
         totalFocusMinutes += duration;
         longestSessionMinutes = Math.max(longestSessionMinutes, duration);
 

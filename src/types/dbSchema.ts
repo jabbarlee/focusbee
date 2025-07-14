@@ -12,6 +12,7 @@ export interface Session {
   end_time: string | null;
   focus_mode: "quick-buzz" | "honey-flow" | "deep-nectar";
   status: "active" | "completed" | "cancelled";
+  actual_focus_minutes: number;
   created_at: string;
 }
 

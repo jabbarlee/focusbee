@@ -39,12 +39,50 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
   const [totalBreakTime, setTotalBreakTime] = useState(0);
   const [breakCount, setBreakCount] = useState(0);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+  // Track actual focused time (excluding paused time)
+  const [actualFocusedTime, setActualFocusedTime] = useState(0); // in seconds
+  const [lastResumeTime, setLastResumeTime] = useState<Date | null>(null);
+
   const maxBreaks = 2;
   const { playSuccess, playNotification, playBuzz } = useSounds();
   const { user, loading, isAuthenticated } = useAuth();
 
   // Use centralized focus modes data
   const timerOptions: FocusMode[] = focusModes;
+
+  // Function to start tracking focus time
+  const startFocusTracking = () => {
+    setLastResumeTime(new Date());
+  };
+
+  // Function to stop tracking focus time and add to total
+  const stopFocusTracking = () => {
+    if (lastResumeTime) {
+      const now = new Date();
+      const focusedSeconds = Math.floor(
+        (now.getTime() - lastResumeTime.getTime()) / 1000
+      );
+      setActualFocusedTime((prev) => prev + focusedSeconds);
+      setLastResumeTime(null);
+    }
+  };
+
+  // Function to get actual focused time in minutes
+  const getActualFocusedMinutes = () => {
+    let totalSeconds = actualFocusedTime;
+
+    // Add current session time if timer is running
+    if (lastResumeTime && isRunning && !isPaused) {
+      const now = new Date();
+      const currentSessionSeconds = Math.floor(
+        (now.getTime() - lastResumeTime.getTime()) / 1000
+      );
+      totalSeconds += currentSessionSeconds;
+    }
+
+    return Math.floor(totalSeconds / 60);
+  };
 
   // Fetch session data from database
   useEffect(() => {
@@ -92,6 +130,7 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
             setSelectedTimer(timer);
             setTimeRemaining(timer.duration * 60); // Convert minutes to seconds
             setIsRunning(true);
+            startFocusTracking(); // Start tracking actual focus time
             playBuzz();
           } else {
             console.error(
@@ -106,6 +145,7 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
               setSelectedTimer(defaultTimer);
               setTimeRemaining(defaultTimer.duration * 60);
               setIsRunning(true);
+              startFocusTracking(); // Start tracking actual focus time
               playBuzz();
             }
           }
@@ -137,7 +177,14 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
             setIsCompleted(true);
             // Mark session as completed in database
             if (sessionData) {
-              completeSession(sessionData.id).catch(console.error);
+              // Stop tracking and get final focused time
+              stopFocusTracking();
+              const finalFocusedMinutes = getActualFocusedMinutes();
+              completeSession(
+                sessionData.id,
+                undefined,
+                finalFocusedMinutes
+              ).catch(console.error);
             }
             playSuccess();
             return 0;
@@ -163,6 +210,9 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
             setIsBreakRunning(false);
             setIsOnBreak(false);
             setIsPaused(false); // Resume main timer
+
+            // Resume tracking focus time
+            startFocusTracking();
             playNotification();
             return 0;
           }
@@ -176,6 +226,13 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
 
   const handlePause = () => {
     if (!isOnBreak) {
+      if (!isPaused) {
+        // Pausing - stop tracking focus time
+        stopFocusTracking();
+      } else {
+        // Resuming - start tracking focus time
+        startFocusTracking();
+      }
       setIsPaused(!isPaused);
       playNotification();
     }
@@ -183,17 +240,25 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
 
   const handleReset = () => {
     if (selectedTimer && !isOnBreak) {
+      // Reset focus tracking
+      setActualFocusedTime(0);
+      setLastResumeTime(null);
+
       setTimeRemaining(selectedTimer.duration * 60);
       setIsRunning(true);
       setIsPaused(false);
       setIsCompleted(false);
+
+      // Start tracking focus time
+      startFocusTracking();
       playBuzz();
     }
   };
 
   const handleBreak = () => {
     if (!isOnBreak && breakCount < maxBreaks) {
-      // Start break
+      // Start break - stop tracking focus time
+      stopFocusTracking();
       setIsOnBreak(true);
       setBreakTimeRemaining(5 * 60); // 5 minutes break
       setIsBreakRunning(true);
@@ -208,6 +273,9 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
       setIsBreakRunning(false);
       setBreakTimeRemaining(0);
       setIsPaused(false); // Resume main timer
+
+      // Resume tracking focus time
+      startFocusTracking();
       playNotification();
     }
   };
@@ -219,6 +287,7 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
   const handleGoToDashboard = async () => {
     // Pause the timer and show confirmation modal
     if (isRunning && !isPaused) {
+      stopFocusTracking(); // Stop tracking when pausing
       setIsPaused(true);
     }
     setShowConfirmModal(true);
@@ -228,7 +297,13 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
     // Complete the session before navigating to dashboard
     if (sessionData && sessionData.status === "active") {
       try {
-        const result = await completeSession(sessionData.id);
+        // Use the actual focused time for completion
+        const finalFocusedMinutes = getActualFocusedMinutes();
+        const result = await completeSession(
+          sessionData.id,
+          undefined,
+          finalFocusedMinutes
+        );
         if (result.success) {
           console.log("Session completed before navigating to dashboard");
         } else {
@@ -246,6 +321,7 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
     // Resume the timer if it was running before
     if (isRunning) {
       setIsPaused(false);
+      startFocusTracking(); // Resume tracking when unpausing
     }
     setShowConfirmModal(false);
   };
@@ -254,7 +330,21 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
     // Mark session as completed and navigate to dashboard
     if (sessionData && sessionData.status === "active") {
       try {
-        const result = await completeSession(sessionData.id);
+        // Stop tracking focus time and get final count
+        stopFocusTracking();
+        const finalFocusedMinutes = getActualFocusedMinutes();
+
+        console.log(
+          "Completing session with actual focused time:",
+          finalFocusedMinutes,
+          "minutes"
+        );
+
+        const result = await completeSession(
+          sessionData.id,
+          undefined,
+          finalFocusedMinutes
+        );
         if (result.success) {
           console.log("Session completed successfully");
           playSuccess();

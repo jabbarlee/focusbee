@@ -19,6 +19,7 @@ export interface UpdateSessionData {
   end_time?: string;
   status?: SessionStatus;
   focus_mode?: FocusMode;
+  actual_focus_minutes?: number;
 }
 
 export interface SessionWithDuration extends Session {
@@ -253,16 +254,24 @@ export async function updateSession(
  */
 export async function completeSession(
   sessionId: string,
-  endTime?: string
+  endTime?: string,
+  actualFocusMinutes?: number
 ): Promise<DatabaseResult<Session>> {
   console.log("=== completeSession Debug ===");
   console.log("Completing session:", sessionId);
   console.log("End time:", endTime || "current time");
+  console.log("Actual focus minutes:", actualFocusMinutes);
 
-  const result = await updateSession(sessionId, {
+  const updateData: UpdateSessionData = {
     status: "completed",
     end_time: endTime || new Date().toISOString(),
-  });
+  };
+
+  if (actualFocusMinutes !== undefined) {
+    updateData.actual_focus_minutes = actualFocusMinutes;
+  }
+
+  const result = await updateSession(sessionId, updateData);
 
   console.log("Complete session result:", result);
   console.log("=== End completeSession Debug ===");

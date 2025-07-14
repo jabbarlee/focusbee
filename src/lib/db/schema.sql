@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS sessions (
   end_time TIMESTAMPTZ,
   focus_mode focus_mode,
   status session_status DEFAULT 'active',
+  actual_focus_minutes INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
