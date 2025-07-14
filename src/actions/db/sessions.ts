@@ -167,7 +167,20 @@ export async function getUserSessions(
       (session) => {
         let duration_minutes: number | undefined;
 
-        if (session.end_time && session.start_time) {
+        if (session.status === "completed") {
+          // Use actual_focus_minutes if available, otherwise fallback to elapsed time
+          if (session.actual_focus_minutes > 0) {
+            duration_minutes = session.actual_focus_minutes;
+          } else if (session.end_time && session.start_time) {
+            // Fallback to elapsed time for older sessions
+            const startTime = new Date(session.start_time);
+            const endTime = new Date(session.end_time);
+            duration_minutes = Math.round(
+              (endTime.getTime() - startTime.getTime()) / (1000 * 60)
+            );
+          }
+        } else if (session.end_time && session.start_time) {
+          // For non-completed sessions, still use elapsed time
           const startTime = new Date(session.start_time);
           const endTime = new Date(session.end_time);
           duration_minutes = Math.round(
@@ -391,24 +404,32 @@ export async function getUserStats(uid: string): Promise<
         start_time: session.start_time,
         end_time: session.end_time,
         focus_mode: session.focus_mode,
+        actual_focus_minutes: session.actual_focus_minutes,
       });
 
-      if (
-        session.status === "completed" &&
-        session.start_time &&
-        session.end_time
-      ) {
-        const startTime = new Date(session.start_time);
-        const endTime = new Date(session.end_time);
-        const duration = Math.round(
-          (endTime.getTime() - startTime.getTime()) / (1000 * 60)
-        );
-        console.log(`Session ${session.id} duration: ${duration} minutes`);
+      if (session.status === "completed") {
+        // Use actual_focus_minutes if available, otherwise fallback to elapsed time calculation
+        let duration = 0;
+        if (session.actual_focus_minutes > 0) {
+          duration = session.actual_focus_minutes;
+          console.log(
+            `Session ${session.id} actual focus time: ${duration} minutes`
+          );
+        } else if (session.start_time && session.end_time) {
+          // Fallback to elapsed time for older sessions
+          const startTime = new Date(session.start_time);
+          const endTime = new Date(session.end_time);
+          duration = Math.round(
+            (endTime.getTime() - startTime.getTime()) / (1000 * 60)
+          );
+          console.log(
+            `Session ${session.id} elapsed time (fallback): ${duration} minutes`
+          );
+        }
+
         totalFocusTime += duration;
       } else {
-        console.log(
-          `Session ${session.id} skipped - not completed or missing times`
-        );
+        console.log(`Session ${session.id} skipped - not completed`);
       }
 
       // Count focus modes
@@ -519,16 +540,19 @@ export async function getWeeklyStats(uid: string): Promise<
       // Convert to Monday=0, Tuesday=1, ..., Sunday=6
       const dayOfWeek = (sessionDate.getDay() + 6) % 7;
 
-      if (
-        session.status === "completed" &&
-        session.start_time &&
-        session.end_time
-      ) {
-        const startTime = new Date(session.start_time);
-        const endTime = new Date(session.end_time);
-        const duration = Math.round(
-          (endTime.getTime() - startTime.getTime()) / (1000 * 60)
-        );
+      if (session.status === "completed") {
+        // Use actual_focus_minutes if available, otherwise fallback to elapsed time calculation
+        let duration = 0;
+        if (session.actual_focus_minutes > 0) {
+          duration = session.actual_focus_minutes;
+        } else if (session.start_time && session.end_time) {
+          // Fallback to elapsed time for older sessions
+          const startTime = new Date(session.start_time);
+          const endTime = new Date(session.end_time);
+          duration = Math.round(
+            (endTime.getTime() - startTime.getTime()) / (1000 * 60)
+          );
+        }
 
         // Only count positive durations
         if (duration > 0) {

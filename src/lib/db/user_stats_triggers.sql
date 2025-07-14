@@ -25,8 +25,12 @@ BEGIN
     SELECT 
         COALESCE(SUM(
             CASE 
-                WHEN s.status = 'completed' AND s.end_time IS NOT NULL 
-                THEN EXTRACT(EPOCH FROM (s.end_time - s.start_time)) / 60
+                WHEN s.status = 'completed' THEN 
+                    CASE 
+                        WHEN s.actual_focus_minutes > 0 THEN s.actual_focus_minutes
+                        WHEN s.end_time IS NOT NULL AND s.start_time IS NOT NULL THEN EXTRACT(EPOCH FROM (s.end_time - s.start_time)) / 60
+                        ELSE 0
+                    END
                 ELSE 0 
             END
         ), 0),
@@ -35,8 +39,12 @@ BEGIN
         COALESCE(COUNT(*), 0),
         COALESCE(MAX(
             CASE 
-                WHEN s.status = 'completed' AND s.end_time IS NOT NULL 
-                THEN EXTRACT(EPOCH FROM (s.end_time - s.start_time)) / 60
+                WHEN s.status = 'completed' THEN 
+                    CASE 
+                        WHEN s.actual_focus_minutes > 0 THEN s.actual_focus_minutes
+                        WHEN s.end_time IS NOT NULL AND s.start_time IS NOT NULL THEN EXTRACT(EPOCH FROM (s.end_time - s.start_time)) / 60
+                        ELSE 0
+                    END
                 ELSE 0 
             END
         ), 0),
