@@ -1,5 +1,11 @@
 -- Database Triggers for Automatic User Stats Updates
 -- These triggers will automatically update user_stats when sessions are created/updated
+--
+-- CRITICAL DATA INTEGRITY RULE:
+-- - Focus time must ONLY be calculated from the actual_focus_minutes field
+-- - NEVER calculate time from start_time/end_time difference
+-- - Only sessions with actual_focus_minutes > 0 count as completed
+-- - The user_stats table is the single source of truth for dashboard data
 
 -- Function to update user stats when sessions change
 CREATE OR REPLACE FUNCTION update_user_stats()
@@ -22,33 +28,24 @@ BEGIN
     END IF;
 
     -- Calculate statistics from all sessions for this user
+    -- STRICT RULE: Only use actual_focus_minutes, never calculate from start_time/end_time
     SELECT 
         COALESCE(SUM(
             CASE 
-                WHEN s.status = 'completed' THEN 
-                    CASE 
-                        WHEN s.actual_focus_minutes > 0 THEN s.actual_focus_minutes
-                        WHEN s.end_time IS NOT NULL AND s.start_time IS NOT NULL THEN EXTRACT(EPOCH FROM (s.end_time - s.start_time)) / 60
-                        ELSE 0
-                    END
+                WHEN s.status = 'completed' AND s.actual_focus_minutes > 0 THEN s.actual_focus_minutes
                 ELSE 0 
             END
         ), 0),
-        COALESCE(COUNT(*) FILTER (WHERE s.status = 'completed'), 0),
+        COALESCE(COUNT(*) FILTER (WHERE s.status = 'completed' AND s.actual_focus_minutes > 0), 0),
         COALESCE(COUNT(*) FILTER (WHERE s.status = 'cancelled'), 0),
         COALESCE(COUNT(*), 0),
         COALESCE(MAX(
             CASE 
-                WHEN s.status = 'completed' THEN 
-                    CASE 
-                        WHEN s.actual_focus_minutes > 0 THEN s.actual_focus_minutes
-                        WHEN s.end_time IS NOT NULL AND s.start_time IS NOT NULL THEN EXTRACT(EPOCH FROM (s.end_time - s.start_time)) / 60
-                        ELSE 0
-                    END
+                WHEN s.status = 'completed' AND s.actual_focus_minutes > 0 THEN s.actual_focus_minutes
                 ELSE 0 
             END
         ), 0),
-        COALESCE(MAX(s.end_time) FILTER (WHERE s.status = 'completed'), NULL)
+        COALESCE(MAX(s.end_time) FILTER (WHERE s.status = 'completed' AND s.actual_focus_minutes > 0), NULL)
     INTO 
         total_mins, 
         completed_count, 

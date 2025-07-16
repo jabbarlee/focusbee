@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { Trophy, Clock, Flame, Target, BarChart3 } from "lucide-react";
 import {
-  getUserStats,
-  getWeeklyStats,
-  cleanupOrphanedSessions,
-} from "@/actions/db/sessions";
+  getUserStatsForDashboard,
+  recalculateUserStats,
+  getWeeklyStatsFromUserStats,
+} from "@/actions/db/userStats";
+import { cleanupOrphanedSessions } from "@/actions/db/sessions";
 
 interface StatsDisplayProps {
   user: any;
@@ -45,11 +46,14 @@ export function StatsDisplay({ user }: StatsDisplayProps) {
         // First, cleanup any orphaned sessions
         await cleanupOrphanedSessions(user.uid);
 
-        // Fetch basic user stats
-        const statsResult = await getUserStats(user.uid);
+        // Recalculate user stats to ensure data integrity
+        await recalculateUserStats(user.uid);
+
+        // Fetch basic user stats from user_stats table
+        const statsResult = await getUserStatsForDashboard(user.uid);
 
         // Fetch weekly stats
-        const weeklyResult = await getWeeklyStats(user.uid);
+        const weeklyResult = await getWeeklyStatsFromUserStats(user.uid);
 
         if (
           statsResult.success &&
@@ -62,10 +66,14 @@ export function StatsDisplay({ user }: StatsDisplayProps) {
             completedSessions: statsResult.data.completedSessions,
             totalFocusTime: statsResult.data.totalFocusTime,
             streakDays: statsResult.data.streakDays,
-            favoriteMode: statsResult.data.favoriteMode || "honey-flow",
+            favoriteMode:
+              (statsResult.data.favoriteMode as
+                | "quick-buzz"
+                | "honey-flow"
+                | "deep-nectar") || "honey-flow",
             weeklyFocus: weeklyResult.data.weeklyFocus,
-            avgSessionLength: weeklyResult.data.avgSessionLength,
-            completionRate: weeklyResult.data.completionRate,
+            avgSessionLength: statsResult.data.avgSessionLength,
+            completionRate: statsResult.data.completionRate,
           });
         } else {
           console.error("Failed to fetch stats:", {
