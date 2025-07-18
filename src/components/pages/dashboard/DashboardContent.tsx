@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { QRConnection } from "./QRConnection";
 import { StatsDisplay } from "./StatsDisplay";
-import { MotivationMessage } from "./MotivationMessage";
+import { SessionsHistory } from "./SessionsHistory";
 import { SessionWaitingScreen } from "./SessionWaitingScreen";
 
 interface DashboardContentProps {
@@ -35,8 +35,8 @@ export function DashboardContent({ user }: DashboardContentProps) {
           </div>
         </div>
 
-        {/* Motivation Message */}
-        <MotivationMessage user={user} />
+        {/* Sessions History */}
+        <SessionsHistory user={user} />
       </div>
     </main>
   );

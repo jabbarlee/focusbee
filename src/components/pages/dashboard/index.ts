@@ -3,6 +3,7 @@ export { DashboardHeader } from "./DashboardHeader";
 export { DashboardContent } from "./DashboardContent";
 export { QRConnection } from "./QRConnection";
 export { StatsDisplay } from "./StatsDisplay";
+export { SessionsHistory } from "./SessionsHistory";
 export { MotivationMessage } from "./MotivationMessage";
 export { LoadingSpinner } from "./LoadingSpinner";
 export { SessionWaitingScreen } from "./SessionWaitingScreen";
