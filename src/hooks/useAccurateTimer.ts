@@ -43,25 +43,11 @@ export function useAccurateTimer({
       totalFocusedSeconds += currentSessionTime;
     }
 
-    console.log(
-      "getActualFocusedTime - stored:",
-      actualFocusTimeRef.current,
-      "current session:",
-      isRunning && !isPaused && startTimeRef.current
-        ? Math.floor(
-            (Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000
-          )
-        : 0,
-      "total:",
-      totalFocusedSeconds
-    );
     return totalFocusedSeconds;
   };
 
   const getActualFocusedMinutes = () => {
-    const minutes = Math.floor(getActualFocusedTime() / 60);
-    console.log("getActualFocusedMinutes:", minutes);
-    return minutes;
+    return Math.floor(getActualFocusedTime() / 60);
   };
 
   const start = () => {
@@ -80,12 +66,6 @@ export function useAccurateTimer({
         (Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000
       );
       actualFocusTimeRef.current += focusedTime;
-      console.log(
-        "Paused - adding focused time:",
-        focusedTime,
-        "total now:",
-        actualFocusTimeRef.current
-      );
     }
     setIsPaused(true);
     setIsRunning(false);
@@ -96,10 +76,6 @@ export function useAccurateTimer({
       // Reset the start time to now and clear paused time for the new session
       startTimeRef.current = Date.now();
       pausedTimeRef.current = 0;
-      console.log(
-        "Resumed - reset start time, current total focused:",
-        actualFocusTimeRef.current
-      );
     }
     setIsPaused(false);
     setIsRunning(true);
@@ -136,12 +112,6 @@ export function useAccurateTimer({
               (Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000
             );
             actualFocusTimeRef.current += finalFocusedTime;
-            console.log(
-              "Timer completed - adding final focused time:",
-              finalFocusedTime,
-              "total:",
-              actualFocusTimeRef.current
-            );
           }
           setIsRunning(false);
           onComplete();
@@ -170,12 +140,6 @@ export function useAccurateTimer({
               (Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000
             );
             actualFocusTimeRef.current += finalFocusedTime;
-            console.log(
-              "Timer completed via visibility change - adding final focused time:",
-              finalFocusedTime,
-              "total:",
-              actualFocusTimeRef.current
-            );
           }
           setIsRunning(false);
           onComplete();

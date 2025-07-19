@@ -3,11 +3,6 @@
 import { supabase } from "@/lib/config/supabase";
 import { Session, FocusMode, SessionStatus } from "@/types/dbSchema";
 import { DatabaseResult } from "./users";
-import {
-  updateStatsOnSessionCreate,
-  updateStatsOnSessionComplete,
-  updateStatsOnSessionCancel,
-} from "./userStats";
 
 export interface CreateSessionData {
   uid: string;
@@ -65,7 +60,8 @@ export async function createSession(
     console.log("Session created successfully:", data); // Debug log
 
     // Update user statistics
-    await updateStatsOnSessionCreate(data.uid);
+    // Note: Database triggers will automatically handle stats updates
+    console.log("Session created - stats will be updated by database triggers");
 
     return {
       success: true,
@@ -211,6 +207,13 @@ export async function getUserSessions(
 /**
  * Update session (typically to mark as completed or cancelled)
  */
+/**
+ * Update an existing session
+ *
+ * Note: User stats are automatically updated by database triggers when sessions
+ * are created, updated, or deleted. The triggers ensure data consistency by
+ * recalculating stats based on actual session data.
+ */
 export async function updateSession(
   sessionId: string,
   updates: UpdateSessionData
@@ -243,10 +246,16 @@ export async function updateSession(
     }
 
     // Update user statistics based on status change
+    // Note: Database triggers will automatically handle stats updates
+    // so we don't need to manually call updateStatsOnSessionComplete
     if (updates.status === "completed") {
-      await updateStatsOnSessionComplete(data as Session);
+      console.log(
+        "Session completed - stats will be updated by database triggers"
+      );
     } else if (updates.status === "cancelled") {
-      await updateStatsOnSessionCancel(data.uid);
+      console.log(
+        "Session cancelled - stats will be updated by database triggers"
+      );
     }
 
     return {
@@ -264,6 +273,9 @@ export async function updateSession(
 
 /**
  * Complete a session
+ *
+ * Note: User stats are automatically updated by database triggers.
+ * Only sessions with actual_focus_minutes > 0 are counted as completed.
  */
 export async function completeSession(
   sessionId: string,
