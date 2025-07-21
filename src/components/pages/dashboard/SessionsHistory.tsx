@@ -19,6 +19,7 @@ import {
   Timer,
   Zap,
   Flame,
+  RefreshCw,
 } from "lucide-react";
 
 interface SessionsHistoryProps {
@@ -48,7 +49,8 @@ const focusModeIcons = {
 export function SessionsHistory({ user }: SessionsHistoryProps) {
   const [sessions, setSessions] = useState<SessionWithDuration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState<FilterType>("active");
+  const [error, setError] = useState<string | null>(null);
+  const [filter, setFilter] = useState<FilterType>("all");
   const [showFilter, setShowFilter] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -77,21 +79,27 @@ export function SessionsHistory({ user }: SessionsHistoryProps) {
     if (!user?.uid) return;
 
     setIsLoading(true);
+    setError(null);
     try {
       const statusFilter =
         filter === "all" ? undefined : (filter as SessionStatus);
       const result = await getUserSessions(user.uid, {
         status: statusFilter,
-        limit: 10,
+        limit: 50,
         orderBy: "created_at",
         order: "desc",
       });
 
       if (result.success && result.data) {
+        console.log("Fetched sessions for user:", user.uid, result.data);
         setSessions(result.data);
+      } else {
+        console.error("Failed to fetch sessions:", result.error);
+        setError(result.error || "Failed to fetch sessions");
       }
     } catch (error) {
       console.error("Error fetching sessions:", error);
+      setError("Failed to fetch sessions");
     } finally {
       setIsLoading(false);
     }
@@ -188,41 +196,66 @@ export function SessionsHistory({ user }: SessionsHistoryProps) {
           Your Focus Sessions
         </h3>
 
-        <div className="relative" ref={filterRef}>
+        <div className="flex items-center gap-2">
           <Button
             variant="secondary"
             size="sm"
-            onClick={() => setShowFilter(!showFilter)}
+            onClick={fetchSessions}
+            disabled={isLoading}
             className="flex items-center gap-2"
           >
-            <Filter className="w-4 h-4" />
-            {getFilterLabel(filter)}
+            <RefreshCw
+              className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`}
+            />
+            Refresh
           </Button>
 
-          {showFilter && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-              {(
-                ["all", "active", "completed", "cancelled"] as FilterType[]
-              ).map((filterType) => (
-                <button
-                  key={filterType}
-                  onClick={() => {
-                    setFilter(filterType);
-                    setShowFilter(false);
-                  }}
-                  className={`w-full text-left px-4 py-2 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors ${
-                    filter === filterType
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-gray-700"
-                  }`}
-                >
-                  {getFilterLabel(filterType)}
-                </button>
-              ))}
-            </div>
-          )}
+          <div className="relative" ref={filterRef}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowFilter(!showFilter)}
+              className="flex items-center gap-2"
+            >
+              <Filter className="w-4 h-4" />
+              {getFilterLabel(filter)}
+            </Button>
+
+            {showFilter && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                {(
+                  ["all", "active", "completed", "cancelled"] as FilterType[]
+                ).map((filterType) => (
+                  <button
+                    key={filterType}
+                    onClick={() => {
+                      setFilter(filterType);
+                      setShowFilter(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors ${
+                      filter === filterType
+                        ? "bg-blue-50 text-blue-600"
+                        : "text-gray-700"
+                    }`}
+                  >
+                    {getFilterLabel(filterType)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl">
+          <div className="flex items-center gap-2 text-red-700">
+            <XCircle className="w-5 h-5" />
+            <span className="font-medium">Error loading sessions</span>
+          </div>
+          <p className="text-sm text-red-600 mt-1">{error}</p>
+        </div>
+      )}
 
       {sessions.length === 0 ? (
         <div className="text-center py-12">
