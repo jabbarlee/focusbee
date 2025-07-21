@@ -7,4 +7,6 @@ export { SignupSection } from "./SignupSection";
 export { CompletionScreen } from "./CompletionScreen";
 export { ConfirmationModal } from "./ConfirmationModal";
 export { LoadingSpinner } from "./LoadingSpinner";
+export { SessionCancelledScreen } from "./SessionCancelledScreen";
+export { SessionCompletedView } from "./SessionCompletedView";
 export { default as FocusPage } from "./FocusPage";

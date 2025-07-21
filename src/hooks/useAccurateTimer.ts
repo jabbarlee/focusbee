@@ -4,21 +4,25 @@ interface UseAccurateTimerProps {
   initialDuration: number; // in seconds
   onComplete: () => void;
   onTick?: (timeRemaining: number) => void;
+  resumeFromFocusedTime?: number; // in seconds - how much time was already focused
 }
 
 export function useAccurateTimer({
   initialDuration,
   onComplete,
   onTick,
+  resumeFromFocusedTime = 0,
 }: UseAccurateTimerProps) {
-  const [timeRemaining, setTimeRemaining] = useState(initialDuration);
+  const [timeRemaining, setTimeRemaining] = useState(
+    Math.max(0, initialDuration - resumeFromFocusedTime)
+  );
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
   const startTimeRef = useRef<number | null>(null);
   const pausedTimeRef = useRef<number>(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const actualFocusTimeRef = useRef<number>(0); // Track actual focused time in seconds
+  const actualFocusTimeRef = useRef<number>(resumeFromFocusedTime); // Initialize with resumed time
 
   const calculateTimeRemaining = () => {
     if (!startTimeRef.current || isPaused) return timeRemaining;
@@ -27,7 +31,8 @@ export function useAccurateTimer({
     const elapsed = Math.floor(
       (now - startTimeRef.current - pausedTimeRef.current) / 1000
     );
-    const remaining = Math.max(0, initialDuration - elapsed);
+    const totalElapsed = resumeFromFocusedTime + elapsed;
+    const remaining = Math.max(0, initialDuration - totalElapsed);
 
     return remaining;
   };
@@ -85,10 +90,10 @@ export function useAccurateTimer({
     const duration = newDuration || initialDuration;
     setIsRunning(false);
     setIsPaused(false);
-    setTimeRemaining(duration);
+    setTimeRemaining(Math.max(0, duration - resumeFromFocusedTime));
     startTimeRef.current = null;
     pausedTimeRef.current = 0;
-    actualFocusTimeRef.current = 0; // Reset actual focus time
+    actualFocusTimeRef.current = resumeFromFocusedTime; // Reset to resumed time
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
     }
@@ -163,6 +168,6 @@ export function useAccurateTimer({
     reset,
     getActualFocusedTime,
     getActualFocusedMinutes,
-    progress: ((initialDuration - timeRemaining) / initialDuration) * 100,
+    progress: (getActualFocusedTime() / initialDuration) * 100,
   };
 }

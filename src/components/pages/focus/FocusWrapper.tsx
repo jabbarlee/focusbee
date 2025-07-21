@@ -21,6 +21,8 @@ import { SessionStats } from "./SessionStats";
 import { SignupSection } from "./SignupSection";
 import { CompletionScreen } from "./CompletionScreen";
 import { ConfirmationModal } from "./ConfirmationModal";
+import { SessionCancelledScreen } from "./SessionCancelledScreen";
+import { SessionCompletedView } from "./SessionCompletedView";
 
 interface FocusWrapperProps {
   sessionId: string;
@@ -33,6 +35,9 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
   const [isLoadingSession, setIsLoadingSession] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [sessionStatus, setSessionStatus] = useState<
+    "active" | "completed" | "cancelled" | null
+  >(null);
 
   // Break timer state
   const [isOnBreak, setIsOnBreak] = useState(false);
@@ -48,6 +53,9 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
   // Main timer using accurate timer hook
   const mainTimer = useAccurateTimer({
     initialDuration: selectedTimer ? selectedTimer.duration * 60 : 0,
+    resumeFromFocusedTime: sessionData?.actual_focus_minutes
+      ? sessionData.actual_focus_minutes * 60
+      : 0,
     onComplete: () => {
       setIsCompleted(true);
       if (sessionData) {
@@ -87,6 +95,20 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
     }
   }, [selectedTimer]);
 
+  // Effect to handle session data changes and timer resumption
+  useEffect(() => {
+    if (sessionData && selectedTimer && sessionStatus === "active") {
+      const focusedMinutes = sessionData.actual_focus_minutes || 0;
+      const totalDurationMinutes = selectedTimer.duration;
+
+      // Only reset and start if the timer isn't already running
+      if (!mainTimer.isRunning && focusedMinutes < totalDurationMinutes) {
+        mainTimer.reset(selectedTimer.duration * 60);
+        // The timer will automatically account for resumeFromFocusedTime
+      }
+    }
+  }, [sessionData, selectedTimer, sessionStatus]);
+
   // Handle page visibility changes
   useEffect(() => {
     if (isVisible && (mainTimer.isRunning || breakTimer.isRunning)) {
@@ -116,23 +138,39 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
         if (result.success && result.data) {
           const session = result.data;
           setSessionData(session);
+          setSessionStatus(session.status);
+
+          const timer = timerOptions.find((t) => t.id === session.focus_mode);
+          if (timer) {
+            setSelectedTimer(timer);
+          }
 
           if (session.status === "completed") {
-            const timer = timerOptions.find((t) => t.id === session.focus_mode);
-            if (timer) {
-              setSelectedTimer(timer);
-            }
             setIsCompleted(true);
             setIsLoadingSession(false);
             return;
           }
 
-          const timer = timerOptions.find((t) => t.id === session.focus_mode);
-          if (timer) {
-            setSelectedTimer(timer);
-            // Start the accurate timer
-            mainTimer.start();
-            playBuzz();
+          if (session.status === "cancelled") {
+            setIsLoadingSession(false);
+            return;
+          }
+
+          if (session.status === "active") {
+            // Resume the timer from where it left off
+            if (timer) {
+              const focusedMinutes = session.actual_focus_minutes || 0;
+              const totalDurationMinutes = timer.duration;
+
+              // Check if session is already completed based on focused time
+              if (focusedMinutes >= totalDurationMinutes) {
+                setIsCompleted(true);
+              } else {
+                // Start the timer from the resumed point
+                mainTimer.start();
+                playBuzz();
+              }
+            }
           }
         } else {
           console.error("Session not found:", result.error);
@@ -299,6 +337,29 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
     );
   }
 
+  // Show cancelled session screen
+  if (sessionStatus === "cancelled") {
+    return (
+      <SessionCancelledScreen
+        selectedTimer={selectedTimer}
+        onGoToDashboard={() => router.push("/dashboard")}
+      />
+    );
+  }
+
+  // Show completed session view (for accessing old completed sessions)
+  if (sessionStatus === "completed" && !isCompleted) {
+    return (
+      <SessionCompletedView
+        selectedTimer={selectedTimer}
+        actualFocusMinutes={sessionData?.actual_focus_minutes}
+        completedAt={sessionData?.end_time || undefined}
+        onGoToDashboard={() => router.push("/dashboard")}
+      />
+    );
+  }
+
+  // Show completion screen (for just completed sessions)
   if (isCompleted) {
     const wasAlreadyCompleted = sessionData?.status === "completed";
 
@@ -341,6 +402,18 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
 
         {/* Main timer area */}
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
+          {/* Show resumption message if applicable */}
+          {(sessionData?.actual_focus_minutes || 0) > 0 &&
+            sessionStatus === "active" && (
+              <div className="mb-6 p-3 bg-blue-100 rounded-lg text-center">
+                <p className="text-blue-800 font-medium">Session Resumed</p>
+                <p className="text-blue-600 text-sm">
+                  You've already focused for {sessionData?.actual_focus_minutes}{" "}
+                  minutes
+                </p>
+              </div>
+            )}
+
           <TimerDisplay
             selectedTimer={selectedTimer}
             timeRemaining={mainTimer.timeRemaining}
