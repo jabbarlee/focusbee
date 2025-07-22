@@ -26,9 +26,9 @@
     },
     {
       "title": "Ritual complete!",
-      "subtitle": "Your focus zone is activated",
-      "instruction": "Return to your workspace. Your phone will stay here as a gentle reminder of your commitment to focus.",
-      "action": "Let's focus",
+      "subtitle": "Ready to activate your focus zone?",
+      "instruction": "Return to your workspace. Your phone will stay here as a gentle reminder of your commitment to focus. Press the button below to activate your focus session.",
+      "action": "Activate Focus Zone",
       "icon": "Target",
       "color": "text-purple-500"
     }
