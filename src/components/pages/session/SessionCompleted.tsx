@@ -70,24 +70,15 @@ export function SessionCompleted({
             </div>
           )}
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col items-center justify-center gap-4">
             <Button
               variant="default"
               size="md"
-              onClick={() => router.push("/focus/" + sessionId)}
+              onClick={() => router.push("/dashboard")}
               className="min-w-48"
             >
-              View Session Details
-            </Button>
-
-            <Button
-              variant="secondary"
-              size="md"
-              onClick={() => router.push("/dashboard")}
-              className="bg-amber-100 hover:bg-amber-200 text-amber-800 min-w-48"
-            >
               <Home size={20} />
-              Back to Dashboard
+              Dashboard
             </Button>
           </div>
         </div>

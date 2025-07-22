@@ -18,18 +18,27 @@ export function useAccurateTimer({
   );
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [completedNaturally, setCompletedNaturally] = useState(false);
 
   const startTimeRef = useRef<number | null>(null);
-  const pausedTimeRef = useRef<number>(0);
+  const totalPausedTimeRef = useRef<number>(0);
+  const pauseStartTimeRef = useRef<number | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const actualFocusTimeRef = useRef<number>(resumeFromFocusedTime); // Initialize with resumed time
+  const actualFocusTimeRef = useRef<number>(resumeFromFocusedTime);
+  // Store the time remaining when paused to preserve it exactly
+  const pausedTimeRemainingRef = useRef<number | null>(null);
 
   const calculateTimeRemaining = () => {
-    if (!startTimeRef.current || isPaused) return timeRemaining;
+    // If paused, return the preserved time remaining
+    if (isPaused && pausedTimeRemainingRef.current !== null) {
+      return pausedTimeRemainingRef.current;
+    }
+
+    if (!startTimeRef.current) return timeRemaining;
 
     const now = Date.now();
     const elapsed = Math.floor(
-      (now - startTimeRef.current - pausedTimeRef.current) / 1000
+      (now - startTimeRef.current - totalPausedTimeRef.current) / 1000
     );
     const totalElapsed = resumeFromFocusedTime + elapsed;
     const remaining = Math.max(0, initialDuration - totalElapsed);
@@ -38,17 +47,21 @@ export function useAccurateTimer({
   };
 
   const getActualFocusedTime = () => {
-    let totalFocusedSeconds = actualFocusTimeRef.current;
-
-    // If currently running and not paused, add the current session time
-    if (isRunning && !isPaused && startTimeRef.current) {
-      const currentSessionTime = Math.floor(
-        (Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000
-      );
-      totalFocusedSeconds += currentSessionTime;
+    // If paused, calculate focused time up to the pause point
+    if (isPaused && pausedTimeRemainingRef.current !== null) {
+      return initialDuration - pausedTimeRemainingRef.current;
     }
 
-    return totalFocusedSeconds;
+    // If currently running, calculate real-time focused time
+    if (isRunning && !isPaused && startTimeRef.current) {
+      const currentSessionTime = Math.floor(
+        (Date.now() - startTimeRef.current - totalPausedTimeRef.current) / 1000
+      );
+      return resumeFromFocusedTime + currentSessionTime;
+    }
+
+    // Fallback to stored value
+    return actualFocusTimeRef.current;
   };
 
   const getActualFocusedMinutes = () => {
@@ -58,29 +71,42 @@ export function useAccurateTimer({
   const start = () => {
     if (!startTimeRef.current) {
       startTimeRef.current = Date.now();
-      pausedTimeRef.current = 0;
+      totalPausedTimeRef.current = 0;
     }
     setIsRunning(true);
     setIsPaused(false);
+    setCompletedNaturally(false);
   };
 
   const pause = () => {
-    // Record the focused time up to this point
     if (isRunning && !isPaused && startTimeRef.current) {
-      const focusedTime = Math.floor(
-        (Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000
+      // Calculate and preserve the exact time remaining at pause
+      const now = Date.now();
+      const elapsed = Math.floor(
+        (now - startTimeRef.current - totalPausedTimeRef.current) / 1000
       );
-      actualFocusTimeRef.current += focusedTime;
+      const totalElapsed = resumeFromFocusedTime + elapsed;
+      const remaining = Math.max(0, initialDuration - totalElapsed);
+
+      // Store the exact time remaining when paused
+      pausedTimeRemainingRef.current = remaining;
+      setTimeRemaining(remaining);
+
+      // Record when pause started for tracking pause duration
+      pauseStartTimeRef.current = Date.now();
     }
     setIsPaused(true);
-    setIsRunning(false);
   };
 
   const resume = () => {
-    if (startTimeRef.current && isPaused) {
-      // Reset the start time to now and clear paused time for the new session
-      startTimeRef.current = Date.now();
-      pausedTimeRef.current = 0;
+    if (isPaused && pauseStartTimeRef.current) {
+      // Add the pause duration to total paused time
+      const pauseDuration = Date.now() - pauseStartTimeRef.current;
+      totalPausedTimeRef.current += pauseDuration;
+      pauseStartTimeRef.current = null;
+
+      // Clear the preserved paused state
+      pausedTimeRemainingRef.current = null;
     }
     setIsPaused(false);
     setIsRunning(true);
@@ -90,9 +116,12 @@ export function useAccurateTimer({
     const duration = newDuration || initialDuration;
     setIsRunning(false);
     setIsPaused(false);
+    setCompletedNaturally(false);
     setTimeRemaining(Math.max(0, duration - resumeFromFocusedTime));
     startTimeRef.current = null;
-    pausedTimeRef.current = 0;
+    totalPausedTimeRef.current = 0;
+    pauseStartTimeRef.current = null;
+    pausedTimeRemainingRef.current = null;
     actualFocusTimeRef.current = resumeFromFocusedTime; // Reset to resumed time
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -111,14 +140,10 @@ export function useAccurateTimer({
         }
 
         if (remaining <= 0) {
-          // Add the final focused time before completing
-          if (startTimeRef.current) {
-            const finalFocusedTime = Math.floor(
-              (Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000
-            );
-            actualFocusTimeRef.current += finalFocusedTime;
-          }
+          // Timer completed naturally - ensure we report the full duration
+          actualFocusTimeRef.current = initialDuration;
           setIsRunning(false);
+          setCompletedNaturally(true);
           onComplete();
         }
       }, 1000);
@@ -139,14 +164,10 @@ export function useAccurateTimer({
         setTimeRemaining(remaining);
 
         if (remaining <= 0) {
-          // Add the final focused time before completing
-          if (startTimeRef.current) {
-            const finalFocusedTime = Math.floor(
-              (Date.now() - startTimeRef.current - pausedTimeRef.current) / 1000
-            );
-            actualFocusTimeRef.current += finalFocusedTime;
-          }
+          // Timer completed naturally - ensure we report the full duration
+          actualFocusTimeRef.current = initialDuration;
           setIsRunning(false);
+          setCompletedNaturally(true);
           onComplete();
         }
       }
@@ -169,5 +190,6 @@ export function useAccurateTimer({
     getActualFocusedTime,
     getActualFocusedMinutes,
     progress: (getActualFocusedTime() / initialDuration) * 100,
+    completedNaturally,
   };
 }

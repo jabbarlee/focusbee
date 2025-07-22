@@ -82,31 +82,16 @@ export function CompletionScreen({
           )}
 
           <div className="flex flex-col items-center gap-4">
-            {!wasAlreadyCompleted && (
+            {/* Dashboard button for all authenticated users */}
+            {!loading && isAuthenticated && (
               <Button
                 variant="default"
-                size="md"
-                onClick={onReset}
-                className="min-w-48"
-              >
-                <RotateCcw size={20} />
-                Restart Timer
-              </Button>
-            )}
-
-            {/* Conditional dashboard button for authenticated users - only show if not already completed */}
-            {!loading && isAuthenticated && !wasAlreadyCompleted && (
-              <Button
-                variant="warning"
                 size="md"
                 onClick={onGoToDashboard}
                 className="min-w-48"
               >
-                <Home
-                  size={16}
-                  className="transition-transform group-hover:scale-110"
-                />
-                <span className="text-sm">Dashboard</span>
+                <Home size={20} />
+                Dashboard
               </Button>
             )}
           </div>

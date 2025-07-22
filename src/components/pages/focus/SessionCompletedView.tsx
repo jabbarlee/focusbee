@@ -6,6 +6,7 @@ interface SessionCompletedViewProps {
   actualFocusMinutes?: number;
   completedAt?: string;
   onGoToDashboard: () => void;
+  onRestart?: () => void;
 }
 
 export function SessionCompletedView({
@@ -13,6 +14,7 @@ export function SessionCompletedView({
   actualFocusMinutes = 0,
   completedAt,
   onGoToDashboard,
+  onRestart,
 }: SessionCompletedViewProps) {
   const formatDate = (dateString?: string) => {
     if (!dateString) return "Unknown time";
@@ -62,9 +64,14 @@ export function SessionCompletedView({
         </div>
 
         {/* Title */}
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Session Completed
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          Session Already Complete! ✨
         </h1>
+
+        <p className="text-lg text-gray-700 mb-6">
+          This focus session has already been completed. Great work on staying
+          consistent with your focus journey!
+        </p>
 
         {/* Session Details */}
         <div className="bg-white/60 rounded-lg p-6 mb-8">
@@ -96,7 +103,7 @@ export function SessionCompletedView({
         {/* Action Button */}
         <Button
           onClick={onGoToDashboard}
-          className="w-full py-3 px-6 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors"
+          className="w-full py-3 px-6 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg font-medium transition-all duration-200 shadow-lg"
         >
           Back to Dashboard
         </Button>

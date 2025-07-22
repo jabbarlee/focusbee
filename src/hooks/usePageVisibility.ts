@@ -1,11 +1,23 @@
 import { useState, useEffect } from "react";
 
 export function usePageVisibility() {
-  const [isVisible, setIsVisible] = useState(!document.hidden);
+  const [isVisible, setIsVisible] = useState(() => {
+    // Check if we're in browser environment
+    if (typeof document !== "undefined") {
+      return !document.hidden;
+    }
+    // Default to visible during SSR
+    return true;
+  });
   const [lastHiddenTime, setLastHiddenTime] = useState<number | null>(null);
   const [lastVisibleTime, setLastVisibleTime] = useState<number | null>(null);
 
   useEffect(() => {
+    // Only run in browser environment
+    if (typeof document === "undefined") {
+      return;
+    }
+
     const handleVisibilityChange = () => {
       const now = Date.now();
 
