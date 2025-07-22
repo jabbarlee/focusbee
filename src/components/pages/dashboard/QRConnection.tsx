@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
-import { Smartphone } from "lucide-react";
+import { Smartphone, Play, Clock } from "lucide-react";
 import { useSounds } from "@/hooks/useSounds";
 import { useWebSocket } from "@/hooks/useWebSocket";
-import { createSession } from "@/actions/db/sessions";
+import { createSession, getUserSessions } from "@/actions/db/sessions";
+import { Button } from "@/components/ui";
+import { focusModes } from "@/lib/data";
 
 interface QRConnectionProps {
   user: any;
@@ -19,10 +21,39 @@ export function QRConnection({ user, onWaitingForSession }: QRConnectionProps) {
   const [qrValue, setQrValue] = useState("");
   const [isPhoneConnected, setIsPhoneConnected] = useState(false);
   const [ritualStep, setRitualStep] = useState("");
+  const [activeSession, setActiveSession] = useState<any>(null);
+  const [isCheckingActiveSession, setIsCheckingActiveSession] = useState(true);
   const [selectedFocusMode, setSelectedFocusMode] = useState<
     "quick-buzz" | "honey-flow" | "deep-nectar"
   >("honey-flow");
   const { playNotification, playBuzz } = useSounds();
+
+  // Check for active sessions on component mount
+  useEffect(() => {
+    const checkActiveSession = async () => {
+      if (!user?.uid) return;
+
+      setIsCheckingActiveSession(true);
+      try {
+        const result = await getUserSessions(user.uid, {
+          status: "active",
+          limit: 1,
+          orderBy: "created_at",
+          order: "desc",
+        });
+
+        if (result.success && result.data && result.data.length > 0) {
+          setActiveSession(result.data[0]);
+        }
+      } catch (error) {
+        console.error("Error checking for active sessions:", error);
+      } finally {
+        setIsCheckingActiveSession(false);
+      }
+    };
+
+    checkActiveSession();
+  }, [user?.uid]);
 
   // Generate QR code for connecting phone (without creating session)
   useEffect(() => {
