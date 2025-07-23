@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { signUpWithEmail } from "@/actions/auth";
 import { Button } from "@/components/ui";
 import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, Star } from "lucide-react";
@@ -79,7 +80,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bee-gradient relative overflow-hidden">
+    <div className="min-h-screen bg-bee-soft relative overflow-hidden">
       {/* Background honeycomb pattern */}
       <div className="absolute inset-0 opacity-20">
         <div className="grid grid-cols-8 gap-4 p-8 transform rotate-12 scale-150">
@@ -97,7 +98,7 @@ export default function SignupPage() {
         <header className="flex items-center justify-center p-6 relative">
           <Button
             onClick={handleBackToFocus}
-            variant="ghost"
+            variant="outline"
             className="absolute left-6 flex items-center gap-2 px-6 py-3 h-12"
           >
             <ArrowLeft size={20} />
@@ -122,8 +123,7 @@ export default function SignupPage() {
               </h2>
 
               <p className="text-amber-700 leading-relaxed">
-                Your bee companion is excited to help you track your focus
-                journey! Let's get you buzzing with productivity. ✨
+                Your companion for deep work sessions✨
               </p>
             </div>
             {/* Signup form */}
@@ -144,7 +144,7 @@ export default function SignupPage() {
                 {/* Name field */}
                 <div>
                   <label className="block text-sm font-semibold text-amber-800 mb-2">
-                    What should we call you? 🍯
+                    What should we call you?
                   </label>
                   <div className="relative">
                     <User
@@ -156,7 +156,7 @@ export default function SignupPage() {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border-2 border-amber-200 rounded-xl focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80"
+                      className="w-full pl-10 pr-4 py-3 border-2 border-amber-200 hover:border-amber-300 focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80 rounded-xl"
                       placeholder="Your name"
                       required
                     />
@@ -166,7 +166,7 @@ export default function SignupPage() {
                 {/* Email field */}
                 <div>
                   <label className="block text-sm font-semibold text-amber-800 mb-2">
-                    Your hive address 📧
+                    Your hive address
                   </label>
                   <div className="relative">
                     <Mail
@@ -178,8 +178,8 @@ export default function SignupPage() {
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border-2 border-amber-200 rounded-xl focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80"
-                      placeholder="your@email.com"
+                      className="w-full pl-10 pr-4 py-3 border-2 border-amber-200 hover:border-amber-300 focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80 rounded-xl"
+                      placeholder="your@buzz.com"
                       required
                     />
                   </div>
@@ -188,7 +188,7 @@ export default function SignupPage() {
                 {/* Password field */}
                 <div>
                   <label className="block text-sm font-semibold text-amber-800 mb-2">
-                    Create a secret buzz 🔐
+                    Create a secret buzz
                   </label>
                   <div className="relative">
                     <Lock
@@ -200,7 +200,7 @@ export default function SignupPage() {
                       name="password"
                       value={formData.password}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-12 py-3 border-2 border-amber-200 rounded-xl focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80"
+                      className="w-full pl-10 pr-12 py-3 border-2 border-amber-200 hover:border-amber-300 focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80 rounded-xl"
                       placeholder="Password"
                       required
                     />
@@ -217,7 +217,7 @@ export default function SignupPage() {
                 {/* Confirm password field */}
                 <div>
                   <label className="block text-sm font-semibold text-amber-800 mb-2">
-                    Confirm your secret buzz 🔒
+                    Confirm your secret buzz
                   </label>
                   <div className="relative">
                     <Lock
@@ -229,7 +229,7 @@ export default function SignupPage() {
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-12 py-3 border-2 border-amber-200 rounded-xl focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80"
+                      className="w-full pl-10 pr-12 py-3 border-2 border-amber-200 hover:border-amber-300 focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80 rounded-xl"
                       placeholder="Confirm password"
                       required
                     />
@@ -266,7 +266,7 @@ export default function SignupPage() {
                         size={20}
                         className="transition-transform duration-300 group-hover:rotate-180"
                       />
-                      Join the Hive! 🎉
+                      Join the Hive
                     </>
                   )}
                 </Button>
@@ -276,23 +276,12 @@ export default function SignupPage() {
               <div className="mt-6 text-center">
                 <p className="text-sm text-amber-700">
                   Already part of the hive?{" "}
-                  <Button
-                    onClick={handleSignInRedirect}
-                    variant="ghost"
-                    className="font-semibold underline p-0 h-auto"
+                  <Link
+                    href="/signin"
+                    className="font-semibold text-amber-600 hover:text-amber-800 hover:underline transition-colors duration-200"
                   >
                     Sign in here
-                  </Button>
-                </p>
-              </div>
-            </div>{" "}
-            {/* Companion message */}
-            <div className="mt-8 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-2xl p-4 shadow-lg">
-              <div className="text-center">
-                <p className="text-amber-700 text-sm leading-relaxed">
-                  "I can't wait to be your focus buddy! Together we'll build
-                  amazing habits and celebrate every milestone. Let's make
-                  productivity feel like play! 🎯"
+                  </Link>
                 </p>
               </div>
             </div>

@@ -184,33 +184,15 @@ export default function Home() {
         <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8">
           {/* Header with FocusBee Branding */}
           <header className="w-full px-4 md:px-8 mb-20">
-            <div className="flex items-center justify-between max-w-6xl mx-auto">
+            <div className="flex items-center justify-center max-w-6xl mx-auto">
               {/* Left side - Logo and slogan */}
-              <div className="flex flex-col">
-                <h1 className="text-4xl font-bold text-amber-900 mb-1">
+              <div className="flex flex-col items-center text-center">
+                <h1 className="text-5xl font-bold text-amber-900 mb-1">
                   Focus<span className="text-amber-600">Bee</span>
                 </h1>
                 <p className="text-lg text-amber-800 leading-relaxed">
                   Your companion for deep focus sessions
                 </p>
-              </div>
-
-              {/* Right side - Auth Buttons */}
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => router.push("/signin")}
-                >
-                  Sign In
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => router.push("/signup")}
-                >
-                  Sign Up
-                </Button>
               </div>
             </div>
           </header>

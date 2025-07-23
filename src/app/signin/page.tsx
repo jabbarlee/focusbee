@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signInWithEmail } from "@/actions/auth";
 import { Button } from "@/components/ui";
+import Link from "next/link";
 import { ArrowLeft, Mail, Lock, Eye, EyeOff, Star } from "lucide-react";
 
 export default function SigninPage() {
@@ -60,7 +61,7 @@ export default function SigninPage() {
   };
 
   return (
-    <div className="min-h-screen bg-bee-gradient relative overflow-hidden">
+    <div className="min-h-screen bg-bee-soft relative overflow-hidden">
       {/* Background honeycomb pattern */}
       <div className="absolute inset-0 opacity-20">
         <div className="grid grid-cols-8 gap-4 p-8 transform rotate-12 scale-150">
@@ -78,7 +79,7 @@ export default function SigninPage() {
         <header className="flex items-center justify-center p-6 relative">
           <Button
             onClick={handleBackToFocus}
-            variant="ghost"
+            variant="outline"
             className="absolute left-6 flex items-center gap-2 px-6 py-3 h-12"
           >
             <ArrowLeft size={20} />
@@ -102,8 +103,7 @@ export default function SigninPage() {
               </h2>
 
               <p className="text-amber-700 leading-relaxed">
-                Ready to continue your focus journey? Let's get back to being
-                productive together! ✨
+                Ready to continue your focus journey?
               </p>
             </div>
 
@@ -125,7 +125,7 @@ export default function SigninPage() {
                 {/* Email field */}
                 <div>
                   <label className="block text-sm font-semibold text-amber-800 mb-2">
-                    Your hive address 📧
+                    Your hive address
                   </label>
                   <div className="relative">
                     <Mail
@@ -137,8 +137,8 @@ export default function SigninPage() {
                       name="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border-2 border-amber-200 rounded-xl focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80"
-                      placeholder="your@email.com"
+                      className="w-full pl-10 pr-4 py-3 border-2 border-amber-200 hover:border-amber-300 focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80 rounded-xl"
+                      placeholder="your@buzz.com"
                       required
                     />
                   </div>
@@ -147,7 +147,7 @@ export default function SigninPage() {
                 {/* Password field */}
                 <div>
                   <label className="block text-sm font-semibold text-amber-800 mb-2">
-                    Your secret buzz 🔐
+                    Your secret buzz
                   </label>
                   <div className="relative">
                     <Lock
@@ -159,7 +159,7 @@ export default function SigninPage() {
                       name="password"
                       value={formData.password}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-12 py-3 border-2 border-amber-200 rounded-xl focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80"
+                      className="w-full pl-10 pr-12 py-3 border-2 border-amber-200 hover:border-amber-300 focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80 rounded-xl"
                       placeholder="Password"
                       required
                     />
@@ -174,14 +174,16 @@ export default function SigninPage() {
                 </div>
 
                 {/* Forgot password link */}
-                <div className="text-right">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="text-sm underline p-0 h-auto font-normal"
-                  >
-                    Forgot your buzz? 🤔
-                  </Button>
+                <div className="text-left">
+                  <p className="text-sm text-amber-700">
+                    Forgot your buzz?{" "}
+                    <Link
+                      href="/forgot-password"
+                      className="font-semibold text-amber-600 hover:text-amber-800 hover:underline transition-colors duration-200"
+                    >
+                      Reset it here
+                    </Link>
+                  </p>
                 </div>
 
                 {/* Submit button */}
@@ -201,7 +203,7 @@ export default function SigninPage() {
                         size={20}
                         className="transition-transform duration-300 group-hover:rotate-180"
                       />
-                      Let's Focus! 🎯
+                      Let's Focus!
                     </>
                   )}
                 </Button>
@@ -210,24 +212,13 @@ export default function SigninPage() {
               {/* Footer */}
               <div className="mt-6 text-center">
                 <p className="text-sm text-amber-700">
-                  New to the hive?{" "}
-                  <Button
-                    onClick={handleSignUpRedirect}
-                    variant="ghost"
-                    className="font-semibold underline p-0 h-auto"
+                  Don't have an account?{" "}
+                  <Link
+                    href="/signup"
+                    className="font-semibold text-amber-600 hover:text-amber-800 hover:underline transition-colors duration-200"
                   >
-                    Join us here
-                  </Button>
-                </p>
-              </div>
-            </div>
-
-            {/* Companion message */}
-            <div className="mt-8 bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-200 rounded-2xl p-4 shadow-lg">
-              <div className="text-center">
-                <p className="text-amber-700 text-sm leading-relaxed">
-                  "Welcome back, busy bee! I've missed our focus sessions
-                  together. Ready to dive back into productivity? 🚀"
+                    Sign up here
+                  </Link>
                 </p>
               </div>
             </div>
