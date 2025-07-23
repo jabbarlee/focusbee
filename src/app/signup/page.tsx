@@ -123,7 +123,7 @@ export default function SignupPage() {
               </h2>
 
               <p className="text-amber-700 leading-relaxed">
-                Your companion for deep work sessions✨
+                Your companion for deep work sessions
               </p>
             </div>
             {/* Signup form */}
