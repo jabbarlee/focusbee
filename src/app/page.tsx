@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { Button } from "@/components/ui";
 import { Smartphone, Shield, Zap, Target, Clock } from "lucide-react";
 
 export default function Home() {
@@ -38,7 +39,7 @@ export default function Home() {
 
     // Create the QR code value (could be a URL or just the session ID)
     const baseUrl = process.env.NEXT_PUBLIC_NETWORK_URL;
-    const qrUrl = `${baseUrl}/session/${newSessionId}`;
+    const qrUrl = `${baseUrl}/session/g/${newSessionId}`;
     setQrValue(qrUrl);
 
     // Play a gentle notification when QR code is ready
@@ -72,7 +73,7 @@ export default function Home() {
     onRitualComplete: (data) => {
       setIsWaitingForSession(true);
       setTimeout(() => {
-        router.push(`/focus/${sessionId}?timer=${data.timer}`);
+        router.push(`/focus/${sessionId}?timer=${data.timer}&guest=true`);
       }, 2000);
     },
   });
@@ -182,16 +183,36 @@ export default function Home() {
         /* Normal QR code state */
         <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8">
           {/* Header with FocusBee Branding */}
-          <header className="text-center mb-20">
-            <div className="mb-3">
-              <h1 className="text-6xl font-bold text-amber-900 mb-2">
-                Focus<span className="text-amber-600">Bee</span>
-              </h1>
-            </div>
+          <header className="w-full px-4 md:px-8 mb-20">
+            <div className="flex items-center justify-between max-w-6xl mx-auto">
+              {/* Left side - Logo and slogan */}
+              <div className="flex flex-col">
+                <h1 className="text-4xl font-bold text-amber-900 mb-1">
+                  Focus<span className="text-amber-600">Bee</span>
+                </h1>
+                <p className="text-lg text-amber-800 leading-relaxed">
+                  Your companion for deep focus sessions
+                </p>
+              </div>
 
-            <p className="text-xl text-amber-800 max-w-2xl mx-auto leading-relaxed">
-              Your companion for deep focus sessions
-            </p>
+              {/* Right side - Auth Buttons */}
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push("/signin")}
+                >
+                  Sign In
+                </Button>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => router.push("/signup")}
+                >
+                  Sign Up
+                </Button>
+              </div>
+            </div>
           </header>
 
           {/* Main content area */}

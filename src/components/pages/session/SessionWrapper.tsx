@@ -17,9 +17,15 @@ import { RitualStep } from "./RitualStep";
 
 interface SessionWrapperProps {
   sessionId: string;
+  isGuest?: boolean;
+  guestTimer?: string;
 }
 
-export function SessionWrapper({ sessionId }: SessionWrapperProps) {
+export function SessionWrapper({
+  sessionId,
+  isGuest = false,
+  guestTimer,
+}: SessionWrapperProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [isStarted, setIsStarted] = useState(false);
@@ -55,6 +61,13 @@ export function SessionWrapper({ sessionId }: SessionWrapperProps) {
     const fetchSessionData = async () => {
       if (!sessionId) return;
 
+      // Handle guest sessions - no database lookup
+      if (isGuest) {
+        setSessionStatus("active");
+        setIsLoadingSession(false);
+        return;
+      }
+
       // Check if this is a temporary session ID (not from database)
       if (sessionId.startsWith("temp_")) {
         setSessionStatus("active");
@@ -88,7 +101,15 @@ export function SessionWrapper({ sessionId }: SessionWrapperProps) {
     };
 
     fetchSessionData();
-  }, [sessionId]);
+  }, [sessionId, isGuest]);
+
+  // Auto-select timer for guest sessions
+  useEffect(() => {
+    if (isGuest && guestTimer && !selectedTimer) {
+      setSelectedTimer(guestTimer);
+      setTimerConfirmed(true);
+    }
+  }, [isGuest, guestTimer, selectedTimer]);
 
   // Play welcome sound when session page loads (QR scanned)
   useEffect(() => {
@@ -270,6 +291,7 @@ export function SessionWrapper({ sessionId }: SessionWrapperProps) {
         sessionId={sessionId}
         selectedTimer={selectedTimer}
         timerOptions={timerOptions}
+        isGuest={isGuest}
       />
     );
   }

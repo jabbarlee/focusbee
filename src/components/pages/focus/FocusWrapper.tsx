@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
 import { useAuth } from "@/hooks/useAuth";
 import { useAccurateTimer } from "@/hooks/useAccurateTimer";
@@ -30,6 +30,7 @@ interface FocusWrapperProps {
 
 export function FocusWrapper({ sessionId }: FocusWrapperProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedTimer, setSelectedTimer] = useState<FocusMode | null>(null);
   const [sessionData, setSessionData] = useState<Session | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(true);
@@ -38,6 +39,7 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
   const [sessionStatus, setSessionStatus] = useState<
     "active" | "completed" | "cancelled" | null
   >(null);
+  const [isGuestSession, setIsGuestSession] = useState(false);
 
   // Break timer state
   const [isOnBreak, setIsOnBreak] = useState(false);
@@ -58,6 +60,13 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
       : 0,
     onComplete: () => {
       setIsCompleted(true);
+      if (isGuestSession) {
+        // For guest sessions, just play success sound and mark as completed
+        console.log("Guest session completed naturally");
+        playSuccess();
+        return;
+      }
+
       if (sessionData && selectedTimer) {
         // When timer completes naturally, use the full focus mode duration
         const fullFocusModeMinutes = selectedTimer.duration;
@@ -126,9 +135,29 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
     const fetchSessionData = async () => {
       if (!sessionId) return;
 
+      // Check if this is a guest session
+      const isGuest = searchParams.get("guest") === "true";
+      const timerParam = searchParams.get("timer");
+
+      if (isGuest && timerParam) {
+        // Handle guest session - no database lookup
+        setIsGuestSession(true);
+        const timer = timerOptions.find((t) => t.id === timerParam);
+        if (timer) {
+          setSelectedTimer(timer);
+          setSessionStatus("active");
+          // Start timer for guest session
+          mainTimer.reset(timer.duration * 60);
+          mainTimer.start();
+          playBuzz();
+        }
+        setIsLoadingSession(false);
+        return;
+      }
+
       if (sessionId.startsWith("temp_")) {
-        console.log("Temporary session ID detected, redirecting to dashboard");
-        router.push("/dashboard");
+        console.log("Temporary session ID detected, redirecting to homepage");
+        router.push("/");
         return;
       }
 
@@ -186,7 +215,7 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
     };
 
     fetchSessionData();
-  }, [sessionId, playBuzz, router]);
+  }, [sessionId, playBuzz, router, searchParams]);
 
   const handlePause = () => {
     if (!isOnBreak) {
@@ -235,7 +264,21 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
     router.push("/signup");
   };
 
+  const handleGoToHomepage = () => {
+    router.push("/");
+  };
+
+  const handleSignUp = () => {
+    router.push("/signup");
+  };
+
   const handleGoToDashboard = async () => {
+    // For guest sessions, navigate to homepage
+    if (isGuestSession) {
+      router.push("/");
+      return;
+    }
+
     // Pause the timer and show confirmation modal
     if (mainTimer.isRunning && !mainTimer.isPaused) {
       mainTimer.pause();
@@ -244,6 +287,12 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
   };
 
   const confirmGoToDashboard = async () => {
+    // For guest sessions, just navigate to homepage
+    if (isGuestSession) {
+      router.push("/");
+      return;
+    }
+
     // Complete the session before navigating to dashboard
     if (sessionData && sessionData.status === "active") {
       try {
@@ -280,6 +329,14 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
 
   const handleCompleteSession = async () => {
     // Mark session as completed and navigate to dashboard
+    if (isGuestSession) {
+      // For guest sessions, just mark as completed locally
+      console.log("Completing guest session locally");
+      playSuccess();
+      setIsCompleted(true);
+      return;
+    }
+
     if (sessionData && sessionData.status === "active") {
       try {
         const actualFocusedMinutes = mainTimer.getActualFocusedMinutes();
@@ -307,6 +364,14 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
 
   const handleCancelSession = async () => {
     // Cancel the session and navigate to dashboard
+    if (isGuestSession) {
+      // For guest sessions, just navigate to homepage
+      console.log("Cancelling guest session");
+      playNotification();
+      router.push("/");
+      return;
+    }
+
     if (sessionData && sessionData.status === "active") {
       try {
         const result = await cancelSession(sessionData.id);
@@ -363,6 +428,10 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
   // Show completion screen (for just completed sessions)
   if (isCompleted) {
     const wasAlreadyCompleted = sessionData?.status === "completed";
+    // For guests, use timer; for authenticated users, use database value
+    const actualFocusedMinutes = isGuestSession
+      ? mainTimer.getActualFocusedMinutes()
+      : sessionData?.actual_focus_minutes;
 
     return (
       <CompletionScreen
@@ -370,8 +439,12 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
         wasAlreadyCompleted={wasAlreadyCompleted}
         isAuthenticated={isAuthenticated}
         loading={loading}
+        isGuest={isGuestSession}
+        actualFocusedMinutes={actualFocusedMinutes}
         onReset={handleReset}
         onGoToDashboard={confirmGoToDashboard}
+        onGoToHomepage={handleGoToHomepage}
+        onSignUp={handleSignUp}
       />
     );
   }

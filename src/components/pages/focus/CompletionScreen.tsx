@@ -1,7 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { CheckCircle, RotateCcw, ArrowLeft, Home } from "lucide-react";
+import {
+  CheckCircle,
+  RotateCcw,
+  ArrowLeft,
+  Home,
+  UserPlus,
+} from "lucide-react";
 import { Button } from "@/components/ui";
 import { FocusMode } from "@/lib/data";
 
@@ -10,8 +16,12 @@ interface CompletionScreenProps {
   wasAlreadyCompleted: boolean;
   isAuthenticated: boolean;
   loading: boolean;
+  isGuest?: boolean;
+  actualFocusedMinutes?: number;
   onReset: () => void;
   onGoToDashboard: () => void;
+  onGoToHomepage?: () => void;
+  onSignUp?: () => void;
 }
 
 export function CompletionScreen({
@@ -19,8 +29,12 @@ export function CompletionScreen({
   wasAlreadyCompleted,
   isAuthenticated,
   loading,
+  isGuest = false,
+  actualFocusedMinutes,
   onReset,
   onGoToDashboard,
+  onGoToHomepage,
+  onSignUp,
 }: CompletionScreenProps) {
   const router = useRouter();
 
@@ -73,8 +87,10 @@ export function CompletionScreen({
                     {selectedTimer.name}
                   </h3>
                   <p className="text-amber-700 text-sm">
-                    {selectedTimer.duration} minutes{" "}
-                    {wasAlreadyCompleted ? "session" : "completed"}
+                    {actualFocusedMinutes !== undefined
+                      ? `${actualFocusedMinutes} minutes focused`
+                      : `${selectedTimer.duration} minutes${" "}
+                    ${wasAlreadyCompleted ? "session" : "completed"}`}
                   </p>
                 </div>
               </div>
@@ -82,8 +98,42 @@ export function CompletionScreen({
           )}
 
           <div className="flex flex-col items-center gap-4">
+            {/* Guest user buttons */}
+            {isGuest && (
+              <>
+                <div className="bg-green-50/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-green-200 mb-4 text-center">
+                  <h3 className="text-lg font-semibold text-green-800 mb-2">
+                    Save Your Progress! 📈
+                  </h3>
+                  <p className="text-green-700 text-sm mb-4">
+                    Sign up to track your focus sessions, see your stats, and
+                    build lasting habits.
+                  </p>
+                  <Button
+                    variant="success"
+                    size="md"
+                    onClick={onSignUp}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white border-green-600 hover:border-green-700"
+                  >
+                    <UserPlus size={20} />
+                    Sign Up & Save Session
+                  </Button>
+                </div>
+
+                <Button
+                  variant="secondary"
+                  size="md"
+                  onClick={onGoToHomepage}
+                  className="min-w-48"
+                >
+                  <Home size={20} />
+                  Back to Homepage
+                </Button>
+              </>
+            )}
+
             {/* Dashboard button for all authenticated users */}
-            {!loading && isAuthenticated && (
+            {!loading && isAuthenticated && !isGuest && (
               <Button
                 variant="default"
                 size="md"

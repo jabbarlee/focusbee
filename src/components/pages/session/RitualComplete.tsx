@@ -7,12 +7,14 @@ interface RitualCompleteProps {
   sessionId: string;
   selectedTimer: string | null;
   timerOptions: FocusMode[];
+  isGuest?: boolean;
 }
 
 export function RitualComplete({
   sessionId,
   selectedTimer,
   timerOptions,
+  isGuest = false,
 }: RitualCompleteProps) {
   return (
     <div className="min-h-screen bg-bee-soft relative overflow-hidden">
