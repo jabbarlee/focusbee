@@ -74,9 +74,16 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
           "Session completed naturally with full focus mode duration:",
           fullFocusModeMinutes
         );
-        completeSession(sessionData.id, undefined, fullFocusModeMinutes).catch(
-          console.error
-        );
+        completeSession(sessionData.id, undefined, fullFocusModeMinutes)
+          .then((result) => {
+            if (result.success && result.data) {
+              console.log(
+                "Session completed naturally - updating session data"
+              );
+              setSessionData(result.data);
+            }
+          })
+          .catch(console.error);
       }
       playSuccess();
     },
@@ -306,8 +313,10 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
           undefined,
           actualFocusedMinutes
         );
-        if (result.success) {
+        if (result.success && result.data) {
           console.log("Session completed before navigating to dashboard");
+          // Update local session data to reflect the completion
+          setSessionData(result.data);
         } else {
           console.error("Failed to complete session:", result.error);
         }
@@ -349,8 +358,10 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
           undefined,
           actualFocusedMinutes
         );
-        if (result.success) {
+        if (result.success && result.data) {
           console.log("Session completed successfully");
+          // Update local session data to reflect the completion
+          setSessionData(result.data);
           playSuccess();
           setIsCompleted(true);
         } else {
@@ -428,10 +439,11 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
   // Show completion screen (for just completed sessions)
   if (isCompleted) {
     const wasAlreadyCompleted = sessionData?.status === "completed";
-    // For guests, use timer; for authenticated users, use database value
+    // For guests, use timer; for authenticated users, use database value or timer as fallback
     const actualFocusedMinutes = isGuestSession
       ? mainTimer.getActualFocusedMinutes()
-      : sessionData?.actual_focus_minutes;
+      : sessionData?.actual_focus_minutes ??
+        mainTimer.getActualFocusedMinutes();
 
     return (
       <CompletionScreen
