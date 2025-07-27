@@ -5,11 +5,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSounds } from "@/hooks/useSounds";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { useDeviceDetection } from "@/hooks/useDeviceDetection";
 import { Button } from "@/components/ui";
+import { MobileLandingPage } from "@/components/pages/landing";
 import { Smartphone, Shield, Zap, Target, Clock } from "lucide-react";
 
 export default function Home() {
   const router = useRouter();
+  const { isMobile, isLoading: deviceLoading } = useDeviceDetection();
   const [sessionId, setSessionId] = useState<string>("");
   const [qrValue, setQrValue] = useState<string>("");
   const [isWaitingForSession, setIsWaitingForSession] = useState(false);
@@ -77,6 +80,22 @@ export default function Home() {
       }, 2000);
     },
   });
+
+  // Show mobile landing page if on mobile device
+  if (deviceLoading) {
+    return (
+      <div className="min-h-screen bg-bee-soft flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-amber-800">Loading FocusBee...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isMobile) {
+    return <MobileLandingPage />;
+  }
 
   return (
     <div className="min-h-screen bg-bee-soft relative overflow-hidden">
