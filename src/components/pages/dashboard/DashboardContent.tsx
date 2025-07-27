@@ -7,7 +7,11 @@ import { SessionsHistory } from "./SessionsHistory";
 import { SessionWaitingScreen } from "./SessionWaitingScreen";
 
 interface DashboardContentProps {
-  user: any;
+  user: {
+    uid: string;
+    email?: string;
+    displayName?: string;
+  } | null;
 }
 
 export function DashboardContent({ user }: DashboardContentProps) {

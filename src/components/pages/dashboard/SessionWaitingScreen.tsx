@@ -11,7 +11,7 @@ export function SessionWaitingScreen() {
           Session Activated! 🐝
         </h1>
         <p className="text-xl text-amber-800 mb-8 leading-relaxed">
-          Great! Your focus ritual is complete. Launching your focus zone...
+          Launching your focus zone...
         </p>
       </div>
     </div>

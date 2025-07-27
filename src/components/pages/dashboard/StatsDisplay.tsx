@@ -10,7 +10,11 @@ import {
 import { cleanupOrphanedSessions } from "@/actions/db/sessions";
 
 interface StatsDisplayProps {
-  user: any;
+  user: {
+    uid: string;
+    email?: string;
+    displayName?: string;
+  } | null;
 }
 
 interface Stats {
@@ -23,6 +27,35 @@ interface Stats {
   avgSessionLength: number;
   completionRate: number;
 }
+
+// Individual skeleton components for each data type
+const NumberSkeleton = ({ width = "w-16" }: { width?: string }) => (
+  <div
+    className={`animate-pulse bg-gray-300 h-9 ${width} rounded mx-auto`}
+  ></div>
+);
+
+const TimeSkeleton = () => (
+  <div className="animate-pulse bg-gray-300 h-9 w-20 rounded mx-auto"></div>
+);
+
+const PercentageSkeleton = () => (
+  <div className="animate-pulse bg-gray-300 h-9 w-16 rounded mx-auto"></div>
+);
+
+const ChartBarSkeleton = ({ dayLabel }: { dayLabel: string }) => (
+  <div className="flex-1 flex flex-col items-center gap-1">
+    <div className="w-full h-full bg-amber-100 rounded-t-xl relative">
+      <div
+        className="w-full bg-gray-300 rounded-t-xl animate-pulse"
+        style={{
+          height: `${Math.random() * 60 + 20}%`,
+        }}
+      />
+    </div>
+    <span className="text-amber-700 text-xs font-bold">{dayLabel}</span>
+  </div>
+);
 
 export function StatsDisplay({ user }: StatsDisplayProps) {
   const [stats, setStats] = useState<Stats>({
@@ -80,17 +113,6 @@ export function StatsDisplay({ user }: StatsDisplayProps) {
             statsError: statsResult.error,
             weeklyError: weeklyResult.error,
           });
-          // Set default values if data fetch fails
-          setStats({
-            totalSessions: 0,
-            completedSessions: 0,
-            totalFocusTime: 0,
-            streakDays: 0,
-            favoriteMode: "honey-flow",
-            weeklyFocus: [0, 0, 0, 0, 0, 0, 0],
-            avgSessionLength: 0,
-            completionRate: 0,
-          });
         }
       } catch (error) {
         console.error("Error fetching statistics:", error);
@@ -111,61 +133,76 @@ export function StatsDisplay({ user }: StatsDisplayProps) {
     return `${mins}m`;
   };
 
+  // Pre-calculate weekly total to avoid recalculation
+  const weeklyTotal = stats.weeklyFocus.reduce((a, b) => a + b, 0);
+
   return (
     <div className="space-y-8">
       {/* Stats Grid */}
       <div className="grid grid-cols-2 gap-8">
+        {/* Total Sessions */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-amber-200 text-center hover:shadow-xl transition-shadow duration-300">
           <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-3">
             <Trophy size={24} className="text-white" />
           </div>
-          <div className="text-3xl font-bold text-amber-900 mb-1">
+          <div className="min-h-[2.25rem] flex items-center justify-center mb-1">
             {isLoadingStats ? (
-              <div className="animate-pulse bg-amber-200 h-8 w-16 rounded mx-auto"></div>
+              <NumberSkeleton />
             ) : (
-              stats.totalSessions
+              <div className="text-3xl font-bold text-amber-900">
+                {stats.totalSessions}
+              </div>
             )}
           </div>
           <p className="text-amber-700 text-sm font-medium">Total Sessions</p>
         </div>
 
+        {/* Total Focus Time */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-green-200 text-center hover:shadow-xl transition-shadow duration-300">
           <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
             <Clock size={24} className="text-white" />
           </div>
-          <div className="text-3xl font-bold text-green-800 mb-1">
+          <div className="min-h-[2.25rem] flex items-center justify-center mb-1">
             {isLoadingStats ? (
-              <div className="animate-pulse bg-green-200 h-8 w-20 rounded mx-auto"></div>
+              <TimeSkeleton />
             ) : (
-              formatTime(stats.totalFocusTime)
+              <div className="text-3xl font-bold text-green-800">
+                {formatTime(stats.totalFocusTime)}
+              </div>
             )}
           </div>
           <p className="text-green-700 text-sm font-medium">Total Focus Time</p>
         </div>
 
+        {/* Day Streak */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-orange-200 text-center hover:shadow-xl transition-shadow duration-300">
           <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center mx-auto mb-3">
             <Flame size={24} className="text-white" />
           </div>
-          <div className="text-3xl font-bold text-orange-800 mb-1">
+          <div className="min-h-[2.25rem] flex items-center justify-center mb-1">
             {isLoadingStats ? (
-              <div className="animate-pulse bg-orange-200 h-8 w-12 rounded mx-auto"></div>
+              <NumberSkeleton width="w-12" />
             ) : (
-              stats.streakDays
+              <div className="text-3xl font-bold text-orange-800">
+                {stats.streakDays}
+              </div>
             )}
           </div>
           <p className="text-orange-700 text-sm font-medium">Day Streak</p>
         </div>
 
+        {/* Success Rate */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-purple-200 text-center hover:shadow-xl transition-shadow duration-300">
           <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-3">
             <Target size={24} className="text-white" />
           </div>
-          <div className="text-3xl font-bold text-purple-800 mb-1">
+          <div className="min-h-[2.25rem] flex items-center justify-center mb-1">
             {isLoadingStats ? (
-              <div className="animate-pulse bg-purple-200 h-8 w-16 rounded mx-auto"></div>
+              <PercentageSkeleton />
             ) : (
-              `${stats.completionRate}%`
+              <div className="text-3xl font-bold text-purple-800">
+                {`${stats.completionRate}%`}
+              </div>
             )}
           </div>
           <p className="text-purple-700 text-sm font-medium">Success Rate</p>
@@ -180,28 +217,15 @@ export function StatsDisplay({ user }: StatsDisplayProps) {
           </div>
           <h3 className="text-xl font-bold text-amber-900">Weekly Focus</h3>
         </div>
+
         <div className="flex items-end gap-2 h-32 mb-4">
           {isLoadingStats
-            ? // Loading skeleton for weekly chart
-              Array.from({ length: 7 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="flex-1 flex flex-col items-center gap-1"
-                >
-                  <div className="w-full bg-amber-100 rounded-t-xl relative">
-                    <div
-                      className="w-full bg-amber-200 rounded-t-xl animate-pulse"
-                      style={{
-                        height: `${Math.random() * 60 + 20}%`,
-                      }}
-                    />
-                  </div>
-                  <span className="text-amber-700 text-xs font-bold">
-                    {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][index]}
-                  </span>
-                </div>
-              ))
-            : stats.weeklyFocus.map((minutes, index) => {
+            ? // Loading skeleton bars with static day labels
+              ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(
+                (day, index) => <ChartBarSkeleton key={index} dayLabel={day} />
+              )
+            : // Actual chart data
+              stats.weeklyFocus.map((minutes, index) => {
                 const maxMinutes = Math.max(...stats.weeklyFocus);
                 const height =
                   maxMinutes > 0 ? (minutes / maxMinutes) * 100 : 0;
@@ -211,9 +235,9 @@ export function StatsDisplay({ user }: StatsDisplayProps) {
                     key={index}
                     className="flex-1 flex flex-col items-center gap-1"
                   >
-                    <div className="w-full bg-amber-100 rounded-t-xl relative">
+                    <div className="w-full bg-amber-100 rounded-t-xl relative h-full">
                       <div
-                        className="w-full bg-gradient-to-t from-amber-400 to-amber-500 rounded-t-xl flex items-end justify-center"
+                        className="w-full bg-gradient-to-t from-amber-400 to-amber-500 rounded-t-xl flex items-end justify-center transition-all duration-500 ease-out"
                         style={{ height: `${height}%` }}
                       >
                         {minutes > 0 && (
@@ -230,15 +254,15 @@ export function StatsDisplay({ user }: StatsDisplayProps) {
                 );
               })}
         </div>
+
         <div className="bg-amber-50 rounded-xl p-4 text-center">
           <p className="text-amber-800 font-semibold">
             Total this week:{" "}
             {isLoadingStats ? (
-              <span className="inline-block animate-pulse bg-amber-200 h-4 w-16 rounded"></span>
+              <span className="inline-block animate-pulse bg-amber-200 h-5 w-16 rounded"></span>
             ) : (
-              formatTime(stats.weeklyFocus.reduce((a, b) => a + b, 0))
-            )}{" "}
-            🎉
+              <span>{formatTime(weeklyTotal)}</span>
+            )}
           </p>
         </div>
       </div>

@@ -40,8 +40,16 @@ export function DashboardWrapper() {
       </div>
 
       <div className="relative z-10 min-h-screen flex flex-col">
-        <DashboardHeader user={user} />
-        <DashboardContent user={user} />
+        <DashboardHeader user={user ? {
+          uid: user.uid,
+          email: user.email || undefined,
+          displayName: user.displayName || undefined
+        } : null} />
+        <DashboardContent user={user ? {
+          uid: user.uid,
+          email: user.email || undefined,
+          displayName: user.displayName || undefined
+        } : null}  />
       </div>
     </div>
   );

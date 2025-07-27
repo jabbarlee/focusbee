@@ -68,13 +68,16 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
       }
 
       if (sessionData && selectedTimer) {
-        // When timer completes naturally, use the full focus mode duration
-        const fullFocusModeMinutes = selectedTimer.duration;
+        // When timer completes naturally, use the ACTUAL focused time, not the full duration
+        const actualFocusedMinutes = mainTimer.getActualFocusedMinutes();
         console.log(
-          "Session completed naturally with full focus mode duration:",
-          fullFocusModeMinutes
+          "Session completed naturally with actual focused minutes:",
+          actualFocusedMinutes,
+          "(not using full focus mode duration:",
+          selectedTimer.duration,
+          ")"
         );
-        completeSession(sessionData.id, undefined, fullFocusModeMinutes)
+        completeSession(sessionData.id, undefined, actualFocusedMinutes)
           .then((result) => {
             if (result.success && result.data) {
               console.log(

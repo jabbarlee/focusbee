@@ -3,15 +3,17 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { QRCodeSVG } from "qrcode.react";
-import { Smartphone, Play, Clock } from "lucide-react";
+import { Smartphone } from "lucide-react";
 import { useSounds } from "@/hooks/useSounds";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import { createSession, getUserSessions } from "@/actions/db/sessions";
-import { Button } from "@/components/ui";
-import { focusModes } from "@/lib/data";
 
 interface QRConnectionProps {
-  user: any;
+  user: {
+    uid: string;
+    email?: string;
+    displayName?: string;
+  } | null;
   onWaitingForSession: (waiting: boolean) => void;
 }
 
@@ -21,7 +23,12 @@ export function QRConnection({ user, onWaitingForSession }: QRConnectionProps) {
   const [qrValue, setQrValue] = useState("");
   const [isPhoneConnected, setIsPhoneConnected] = useState(false);
   const [ritualStep, setRitualStep] = useState("");
-  const [activeSession, setActiveSession] = useState<any>(null);
+  const [activeSession, setActiveSession] = useState<{
+    id: string;
+    status: string;
+    focus_mode: string;
+    created_at: string;
+  } | null>(null);
   const [isCheckingActiveSession, setIsCheckingActiveSession] = useState(true);
   const [selectedFocusMode, setSelectedFocusMode] = useState<
     "quick-buzz" | "honey-flow" | "deep-nectar"

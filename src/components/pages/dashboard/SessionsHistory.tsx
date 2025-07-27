@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { getUserSessions } from "@/actions/db/sessions";
 import { SessionWithDuration } from "@/actions/db/sessions";
 import { SessionStatus } from "@/types/dbSchema";
@@ -23,7 +23,11 @@ import {
 } from "lucide-react";
 
 interface SessionsHistoryProps {
-  user: any;
+  user: {
+    uid: string;
+    email?: string;
+    displayName?: string;
+  } | null;
 }
 
 type FilterType = "all" | "active" | "completed" | "cancelled";
@@ -55,27 +59,7 @@ export function SessionsHistory({ user }: SessionsHistoryProps) {
   const filterRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchSessions();
-  }, [user?.uid, filter]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        filterRef.current &&
-        !filterRef.current.contains(event.target as Node)
-      ) {
-        setShowFilter(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     if (!user?.uid) return;
 
     setIsLoading(true);
@@ -103,7 +87,27 @@ export function SessionsHistory({ user }: SessionsHistoryProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user?.uid, filter]);
+
+  useEffect(() => {
+    fetchSessions();
+  }, [fetchSessions]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        filterRef.current &&
+        !filterRef.current.contains(event.target as Node)
+      ) {
+        setShowFilter(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);

@@ -7,7 +7,11 @@ import { Button } from "@/components/ui";
 import { signOutUser } from "@/actions/auth";
 
 interface DashboardHeaderProps {
-  user: any;
+  user: {
+    uid: string;
+    email?: string;
+    displayName?: string;
+  } | null;
 }
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
