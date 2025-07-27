@@ -13,39 +13,11 @@ import {
   Timer,
   HelpCircle,
 } from "lucide-react";
+import { focusModes } from "@/lib/data";
 
 interface MobileLandingPageProps {}
 
 export function MobileLandingPage({}: MobileLandingPageProps) {
-  const focusModes = [
-    {
-      id: "quick-buzz",
-      name: "Quick Buzz",
-      duration: 20,
-      description: "Rapid focus burst",
-      icon: Zap,
-      color: "from-yellow-400 to-orange-500",
-      textColor: "text-yellow-600",
-    },
-    {
-      id: "honey-flow",
-      name: "Honey Flow",
-      duration: 40,
-      description: "Solid work block to build momentum and flow",
-      icon: Flame,
-      color: "from-orange-400 to-red-500",
-      textColor: "text-orange-600",
-    },
-    {
-      id: "deep-nectar",
-      name: "Deep Nectar",
-      duration: 90,
-      description: "Long, immersive session for serious deep work",
-      icon: Timer,
-      color: "from-purple-400 to-indigo-500",
-      textColor: "text-purple-600",
-    },
-  ];
 
   const benefits = [
     {

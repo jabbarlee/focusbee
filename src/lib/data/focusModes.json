@@ -2,9 +2,9 @@
   "focusModes": [
     {
       "id": "quick-buzz",
-      "name": "Quick Buzz (TEST)",
-      "duration": 1,
-      "description": "1-minute test session for development and testing",
+      "name": "Quick Buzz",
+      "duration": 20,
+      "description": "Quick, energetic session to power through tasks",
       "icon": "Zap",
       "color": "from-yellow-400 to-orange-500",
       "textColor": "text-yellow-600"
