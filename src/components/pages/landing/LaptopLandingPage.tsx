@@ -160,24 +160,39 @@ export default function LaptopLandingPage() {
         </div>
         {/* Center nav links */}
         <div className="flex gap-10">
-          <Link
+          <a
             href="#how-it-works"
-            className="text-amber-900 font-medium transition hover:underline underline-offset-4"
+            className="text-amber-900 font-medium transition hover:underline underline-offset-4 cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.getElementById("how-it-works");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }}
           >
             How it works?
-          </Link>
-          <Link
+          </a>
+          <a
             href="#benefits"
-            className="text-amber-900 font-medium transition hover:underline underline-offset-4"
+            className="text-amber-900 font-medium transition hover:underline underline-offset-4 cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.getElementById("benefits");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }}
           >
             Benefits
-          </Link>
-          <Link
+          </a>
+          <a
             href="#focus-modes"
-            className="text-amber-900 font-medium transition hover:underline underline-offset-4"
+            className="text-amber-900 font-medium transition hover:underline underline-offset-4 cursor-pointer"
+            onClick={(e) => {
+              e.preventDefault();
+              const el = document.getElementById("focus-modes");
+              if (el) el.scrollIntoView({ behavior: "smooth" });
+            }}
           >
             Focus Modes
-          </Link>
+          </a>
         </div>
         {/* CTA */}
         <div>
@@ -280,7 +295,10 @@ export default function LaptopLandingPage() {
         <div className="h-px bg-gradient-to-r from-transparent via-amber-300/30 to-transparent mx-8"></div>
 
         {/* Why Phone Separation Matters */}
-        <section className="px-6 py-20 bg-gradient-to-b from-amber-50/50 to-white/70 backdrop-blur-sm">
+        <section
+          id="benefits"
+          className="px-6 py-20 bg-gradient-to-b from-amber-50/50 to-white/70 backdrop-blur-sm"
+        >
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -323,7 +341,10 @@ export default function LaptopLandingPage() {
         <div className="h-px bg-gradient-to-r from-transparent via-amber-300/30 to-transparent mx-8"></div>
 
         {/* Focus Modes */}
-        <section className="px-6 py-20 bg-gradient-to-b from-white/40 to-amber-50/40 backdrop-blur-sm">
+        <section
+          id="focus-modes"
+          className="px-6 py-20 bg-gradient-to-b from-white/40 to-amber-50/40 backdrop-blur-sm"
+        >
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <div className="w-16 h-16 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -371,7 +392,10 @@ export default function LaptopLandingPage() {
         <div className="h-px bg-gradient-to-r from-transparent via-amber-300/30 to-transparent mx-8"></div>
 
         {/* How It Works */}
-        <section className="px-6 py-20 bg-gradient-to-b from-white/60 to-white/80 backdrop-blur-sm">
+        <section
+          id="how-it-works"
+          className="px-6 py-20 bg-gradient-to-b from-white/60 to-white/80 backdrop-blur-sm"
+        >
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
               <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
