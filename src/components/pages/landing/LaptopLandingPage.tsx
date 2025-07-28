@@ -4,17 +4,13 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Smartphone,
-  Laptop,
   Shield,
-  Zap,
   Target,
   Clock,
   Brain,
   TrendingUp,
   CheckCircle,
-  ArrowRight,
-  Flame,
-  Timer,
+  Star,
   HelpCircle,
 } from "lucide-react";
 
@@ -185,7 +181,13 @@ export default function LaptopLandingPage() {
         </div>
         {/* CTA */}
         <div>
-          <Button size="md">Join hive!</Button>
+          <Button size="md">
+            <Star
+              size={20}
+              className="transition-transform duration-300 group-hover:rotate-180"
+            />
+            Join hive!
+          </Button>
         </div>
       </nav>
 
@@ -273,9 +275,6 @@ export default function LaptopLandingPage() {
             </div>
           </div>
         </section>
-
-        {/* Section Separator */}
-        <div className="h-px bg-gradient-to-r from-transparent via-amber-300/30 to-transparent mx-8"></div>
 
         {/* Section Separator */}
         <div className="h-px bg-gradient-to-r from-transparent via-amber-300/30 to-transparent mx-8"></div>
@@ -422,13 +421,13 @@ export default function LaptopLandingPage() {
                 <Smartphone size={40} className="text-white" />
               </div>
 
-              <h3 className="text-5xl font-bold mb-6">
+              <h3 className="text-4xl font-bold mb-6">
                 Start Your Focus Journey
               </h3>
 
               <p className="mb-8 text-amber-100 leading-relaxed text-2xl max-w-2xl mx-auto">
-                Join thousands who've transformed their work habits through
-                intentional phone separation.
+                Distance from your phone increases focus. We turn that into a
+                daily habit you'll love.
               </p>
 
               <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30 max-w-md mx-auto">

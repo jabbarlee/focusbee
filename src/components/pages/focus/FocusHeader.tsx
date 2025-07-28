@@ -45,7 +45,10 @@ export function FocusHeader({
               </Button>
             ) : (
               <Button variant="default" size="md" onClick={onJoinHive}>
-                <Star size={20} />
+                <Star
+                  size={20}
+                  className="transition-transform duration-300 group-hover:rotate-180"
+                />
                 Join Hive
               </Button>
             )}

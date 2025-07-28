@@ -21,7 +21,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      "group relative flex items-center justify-center font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md backdrop-blur-sm disabled:opacity-60 disabled:cursor-not-allowed";
+      "group relative flex items-center justify-center font-semibold rounded-xl transition-all duration-200 shadow-sm hover:shadow-md backdrop-blur-sm disabled:opacity-60 disabled:cursor-not-allowed hover:cursor-pointer";
 
     const variants = {
       default:
