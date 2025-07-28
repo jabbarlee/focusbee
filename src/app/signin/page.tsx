@@ -53,7 +53,12 @@ export default function SigninPage() {
   };
 
   const handleBackToFocus = () => {
-    router.back();
+    // If previous page is dashboard, redirect to homepage instead
+    if (window.location.pathname === "/dashboard") {
+      router.push("/");
+    } else {
+      router.back();
+    }
   };
 
   const handleSignUpRedirect = () => {
@@ -98,8 +103,8 @@ export default function SigninPage() {
           <div className="w-full max-w-md">
             {/* Welcome section */}
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-amber-900 mb-2">
-                Welcome Back! 🐝
+              <h2 className="text-4xl font-bold text-amber-900 mb-2">
+                Welcome Back!
               </h2>
 
               <p className="text-amber-700 leading-relaxed">
@@ -125,7 +130,7 @@ export default function SigninPage() {
                 {/* Email field */}
                 <div>
                   <label className="block text-sm font-semibold text-amber-800 mb-2">
-                    Your hive address
+                    Your email
                   </label>
                   <div className="relative">
                     <Mail
@@ -147,7 +152,7 @@ export default function SigninPage() {
                 {/* Password field */}
                 <div>
                   <label className="block text-sm font-semibold text-amber-800 mb-2">
-                    Your secret buzz
+                    Your password
                   </label>
                   <div className="relative">
                     <Lock

@@ -196,7 +196,7 @@ export default function LaptopLandingPage() {
         </div>
         {/* CTA */}
         <div>
-          <Button size="md">
+          <Button size="md" onClick={() => router.push("/signup")}>
             <Star
               size={20}
               className="transition-transform duration-300 group-hover:rotate-180"

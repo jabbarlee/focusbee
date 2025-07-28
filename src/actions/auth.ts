@@ -55,7 +55,7 @@ export async function signUpWithEmail(
 
     return {
       success: true,
-      message: "Account created successfully! Welcome to the hive! 🐝",
+      message: "Account created successfully!",
       user: userCredential.user,
     };
   } catch (error: any) {
@@ -119,7 +119,7 @@ export async function signInWithEmail(
 
     return {
       success: true,
-      message: "Welcome back, busy bee! 🐝",
+      message: "Welcome back, busy bee!",
       user: userCredential.user,
     };
   } catch (error: any) {

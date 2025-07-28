@@ -75,10 +75,6 @@ export default function SignupPage() {
     router.back();
   };
 
-  const handleSignInRedirect = () => {
-    router.push("/signin");
-  };
-
   return (
     <div className="min-h-screen bg-bee-soft relative overflow-hidden">
       {/* Background honeycomb pattern */}
@@ -118,8 +114,8 @@ export default function SignupPage() {
             {" "}
             {/* Welcome section */}
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-amber-900 mb-2">
-                Welcome to the Hive! 🐝
+              <h2 className="text-4xl font-bold text-amber-900 mb-2">
+                Welcome to the Hive!
               </h2>
 
               <p className="text-amber-700 leading-relaxed">
@@ -144,7 +140,7 @@ export default function SignupPage() {
                 {/* Name field */}
                 <div>
                   <label className="block text-sm font-semibold text-amber-800 mb-2">
-                    What should we call you?
+                    Your name
                   </label>
                   <div className="relative">
                     <User
@@ -157,7 +153,7 @@ export default function SignupPage() {
                       value={formData.name}
                       onChange={handleInputChange}
                       className="w-full pl-10 pr-4 py-3 border-2 border-amber-200 hover:border-amber-300 focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80 rounded-xl"
-                      placeholder="Your name"
+                      placeholder="Bumble Bee"
                       required
                     />
                   </div>
@@ -166,7 +162,7 @@ export default function SignupPage() {
                 {/* Email field */}
                 <div>
                   <label className="block text-sm font-semibold text-amber-800 mb-2">
-                    Your hive address
+                    Your email
                   </label>
                   <div className="relative">
                     <Mail
@@ -179,7 +175,7 @@ export default function SignupPage() {
                       value={formData.email}
                       onChange={handleInputChange}
                       className="w-full pl-10 pr-4 py-3 border-2 border-amber-200 hover:border-amber-300 focus:border-amber-500 focus:outline-none transition-colors duration-200 bg-white/80 rounded-xl"
-                      placeholder="your@buzz.com"
+                      placeholder="bumblebee@buzz.com"
                       required
                     />
                   </div>
@@ -188,7 +184,7 @@ export default function SignupPage() {
                 {/* Password field */}
                 <div>
                   <label className="block text-sm font-semibold text-amber-800 mb-2">
-                    Create a secret buzz
+                    Create a password
                   </label>
                   <div className="relative">
                     <Lock
@@ -217,7 +213,7 @@ export default function SignupPage() {
                 {/* Confirm password field */}
                 <div>
                   <label className="block text-sm font-semibold text-amber-800 mb-2">
-                    Confirm your secret buzz
+                    Confirm your password
                   </label>
                   <div className="relative">
                     <Lock
