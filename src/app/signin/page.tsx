@@ -53,16 +53,7 @@ export default function SigninPage() {
   };
 
   const handleBackToFocus = () => {
-    // If previous page is dashboard, redirect to homepage instead
-    if (window.location.pathname === "/dashboard") {
-      router.push("/");
-    } else {
-      router.back();
-    }
-  };
-
-  const handleSignUpRedirect = () => {
-    router.push("/signup");
+    router.push('/');
   };
 
   return (
@@ -88,7 +79,7 @@ export default function SigninPage() {
             className="absolute left-6 flex items-center gap-2 px-6 py-3 h-12"
           >
             <ArrowLeft size={20} />
-            Back
+            Home
           </Button>
           <div className="text-center">
             <h1 className="text-2xl font-bold text-amber-900">
