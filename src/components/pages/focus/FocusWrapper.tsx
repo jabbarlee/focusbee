@@ -289,11 +289,11 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
       return;
     }
 
-    // Pause the timer and show confirmation modal
+    // Pause the timer and navigate to dashboard (no modal)
     if (mainTimer.isRunning && !mainTimer.isPaused) {
       mainTimer.pause();
     }
-    setShowConfirmModal(true);
+    router.push("/dashboard");
   };
 
   const confirmGoToDashboard = async () => {
@@ -536,11 +536,7 @@ export function FocusWrapper({ sessionId }: FocusWrapperProps) {
           )}
         </div>
 
-        <ConfirmationModal
-          isOpen={showConfirmModal}
-          onConfirm={confirmGoToDashboard}
-          onCancel={cancelGoToDashboard}
-        />
+        {/* ConfirmationModal removed: dashboard navigation is now instant and session is paused */}
       </div>
     </div>
   );
