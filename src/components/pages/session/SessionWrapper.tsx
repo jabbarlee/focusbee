@@ -153,7 +153,7 @@ export function SessionWrapper({
   const handleStepComplete = () => {
     if (currentStep === 0) {
       // First step: start countdown for walk away
-      setCountdown(3);
+      setCountdown(10);
       setIsCountdownActive(true);
       playStepComplete();
 

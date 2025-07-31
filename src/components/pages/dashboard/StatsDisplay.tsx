@@ -210,12 +210,12 @@ export function StatsDisplay({ user }: StatsDisplayProps) {
       </div>
 
       {/* Weekly Chart */}
-      <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-amber-200">
+      <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-blue-200">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
             <BarChart3 size={20} className="text-white" />
           </div>
-          <h3 className="text-xl font-bold text-amber-900">Weekly Focus</h3>
+          <h3 className="text-xl font-bold text-blue-900">Weekly Focus</h3>
         </div>
 
         <div className="flex items-end gap-2 h-32 mb-4">
@@ -235,9 +235,9 @@ export function StatsDisplay({ user }: StatsDisplayProps) {
                     key={index}
                     className="flex-1 flex flex-col items-center gap-1"
                   >
-                    <div className="w-full bg-amber-100 rounded-t-xl relative h-full">
+                    <div className="w-full bg-blue-100 rounded-t-xl relative h-full">
                       <div
-                        className="w-full bg-gradient-to-t from-amber-400 to-amber-500 rounded-t-xl flex items-end justify-center transition-all duration-500 ease-out"
+                        className="w-full bg-gradient-to-t from-blue-400 to-blue-500 rounded-t-xl flex items-end justify-center transition-all duration-500 ease-out"
                         style={{ height: `${height}%` }}
                       >
                         {minutes > 0 && (
@@ -247,7 +247,7 @@ export function StatsDisplay({ user }: StatsDisplayProps) {
                         )}
                       </div>
                     </div>
-                    <span className="text-amber-700 text-xs font-bold">
+                    <span className="text-blue-700 text-xs font-bold">
                       {days[index]}
                     </span>
                   </div>
@@ -255,8 +255,8 @@ export function StatsDisplay({ user }: StatsDisplayProps) {
               })}
         </div>
 
-        <div className="bg-amber-50 rounded-xl p-4 text-center">
-          <p className="text-amber-800 font-semibold">
+        <div className="bg-blue-50 rounded-xl p-4 text-center">
+          <p className="text-blue-800 font-semibold">
             Total this week:{" "}
             {isLoadingStats ? (
               <span className="inline-block animate-pulse bg-amber-200 h-5 w-16 rounded"></span>

@@ -12,6 +12,8 @@ interface TimerDisplayProps {
   breakTimeRemaining: number;
   onPause: () => void;
   onReset: () => void;
+  pauseLoading?: boolean;
+  resetLoading?: boolean;
 }
 
 export function TimerDisplay({
@@ -23,6 +25,8 @@ export function TimerDisplay({
   breakTimeRemaining,
   onPause,
   onReset,
+  pauseLoading = false,
+  resetLoading = false,
 }: TimerDisplayProps) {
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -108,7 +112,7 @@ export function TimerDisplay({
                 <div className="mt-4 flex gap-3">
                   <button
                     onClick={onPause}
-                    disabled={isOnBreak}
+                    disabled={isOnBreak || pauseLoading}
                     className={`group flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white border transition-all duration-200 shadow-sm hover:shadow-md font-semibold rounded-xl ${
                       isOnBreak
                         ? "border-gray-200 text-gray-400 cursor-not-allowed"
@@ -117,7 +121,9 @@ export function TimerDisplay({
                         : "border-amber-200 hover:border-amber-300 text-amber-700 hover:text-amber-800"
                     }`}
                   >
-                    {isPaused ? (
+                    {pauseLoading ? (
+                      <span className="text-xs animate-pulse">...</span>
+                    ) : isPaused ? (
                       <Play
                         size={16}
                         className="transition-transform group-hover:scale-110"
@@ -132,17 +138,21 @@ export function TimerDisplay({
 
                   <button
                     onClick={onReset}
-                    disabled={isOnBreak}
+                    disabled={isOnBreak || resetLoading}
                     className={`group flex items-center justify-center w-12 h-12 bg-white/90 backdrop-blur-sm hover:bg-white border transition-all duration-200 shadow-sm hover:shadow-md font-semibold rounded-xl ${
                       isOnBreak
                         ? "border-gray-200 text-gray-400 cursor-not-allowed"
                         : "border-gray-200 hover:border-gray-300 text-gray-700 hover:text-gray-800"
                     }`}
                   >
-                    <RotateCcw
-                      size={16}
-                      className="transition-transform group-hover:rotate-180"
-                    />
+                    {resetLoading ? (
+                      <span className="text-xs animate-pulse">...</span>
+                    ) : (
+                      <RotateCcw
+                        size={16}
+                        className="transition-transform group-hover:rotate-180"
+                      />
+                    )}
                   </button>
                 </div>
               </div>
